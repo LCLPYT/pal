@@ -1,4 +1,4 @@
-package org.example.cmd;
+package work.lclpnet.pal.cmd;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;

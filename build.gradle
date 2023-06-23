@@ -4,6 +4,7 @@ plugins {
     id 'maven-publish'
     id 'gradle-build-utils' version '1.4.0'
     id 'kibu-plugin-dev' version '0.5.1'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 
 Properties props = buildUtils.loadProperties('publish.properties')
@@ -34,6 +35,11 @@ dependencies {
 
     /* other Java dependencies */
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
+
+    "work.lclpnet:translations4j:${project.translations4j_version}".with {
+        implementation it
+        bundle (it) { transitive = false }
+    }
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
