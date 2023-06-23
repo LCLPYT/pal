@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "version": "${version}",
+  "id": "examplePlugin",
+  "entry": "org.example.ExamplePlugin",
+  "dependsOn": [],
+  "fabric": {
+    "env": ["client", "server"],
+    "requires": ["fabric-api", "kibu"]
+  }
+}
