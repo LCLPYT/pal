@@ -1,5 +1,6 @@
 package work.lclpnet.pal.event;
 
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -38,10 +39,13 @@ public class PlateListener implements HookListenerModule {
     }
 
     private boolean onPressurePlate(World world, BlockPos pos, Entity entity) {
-        if (!(entity instanceof PlayerEntity player) || !world.getBlockState(pos).isOf(Blocks.LIGHT_WEIGHTED_PRESSURE_PLATE)) return false;
-
         PalConfig config = configAccess.getConfig();
         if (!config.enablePlates) return false;
+
+        if (!(entity instanceof PlayerEntity player) || !world.getBlockState(pos).isOf(Blocks.LIGHT_WEIGHTED_PRESSURE_PLATE)) return false;
+
+        BlockState below = world.getBlockState(pos.down());
+        if (!below.isOf(Blocks.GOLD_BLOCK)) return false;
 
         Vec3d rotation = player.getRotationVector();
         rotation.multiply(config.plateStrength);
