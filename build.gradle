@@ -35,6 +35,13 @@ dependencies {
 
     /* other Java dependencies */
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
+    implementation 'org.json:json:20230227'
+
+    // bundle these dependencies
+    'work.lclpnet:json-config4j:1.0.0'.with {
+        implementation it
+        bundle (it) { transitive = false }
+    }
 
     "work.lclpnet:translations4j:${project.translations4j_version}".with {
         implementation it
