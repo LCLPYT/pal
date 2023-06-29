@@ -1,6 +1,6 @@
 {
   "pal.permissions.requires.living": "A living entity is required to run this command here",
-  "pal.cmd.heal.healed_you": "You have been healed.",
+  "pal.cmd.heal.healed_you": "You have been healed",
   "pal.cmd.heal.single": "Healed %s",
   "pal.cmd.heal.multiple": "Healed %s entities"
 }
