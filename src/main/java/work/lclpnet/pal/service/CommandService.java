@@ -1,52 +1,41 @@
 package work.lclpnet.pal.service;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import work.lclpnet.kibu.access.PlayerLanguage;
+import net.minecraft.text.Text;
+import work.lclpnet.kibu.translate.TranslationService;
+import work.lclpnet.kibu.translate.text.RootText;
 import work.lclpnet.pal.cmd.TranslatedCommandExceptionType;
-import work.lclpnet.translations.Translator;
 
 import javax.annotation.Nonnull;
 
 public class CommandService {
 
-    private final Translator translator;
+    private final TranslationService translationService;
     private final TranslatedCommandExceptionType requiresLivingException;
 
-    public CommandService(Translator translator) {
-        this.translator = translator;
-        this.requiresLivingException = new TranslatedCommandExceptionType(translator, "pal.permissions.requires.living");
+    public CommandService(TranslationService translationService) {
+        this.translationService = translationService;
+        this.requiresLivingException = new TranslatedCommandExceptionType("pal.permissions.requires.living");
     }
 
     @Nonnull
     public CommandSyntaxException createRequiresLivingException(ServerCommandSource source) {
-        return requiresLivingException.create(getLocaleOf(source));
+        return requiresLivingException.create(key -> translateText(source, key));
     }
 
-    @Nonnull
-    public String getLocaleOf(ServerCommandSource source) {
-        Entity entity = source.getEntity();
+    public TranslationService getTranslationService() {
+        return translationService;
+    }
 
-        if (entity != null) {
-            return getLocaleOf(entity);
+    public RootText translateText(ServerCommandSource source, String key, Object... arguments) {
+        ServerPlayerEntity player = source.getPlayer();
+
+        if (player != null) {
+            return translationService.translateText(player, key, arguments);
         }
 
-        return "en_us";
-    }
-
-    @Nonnull
-    public String getLocaleOf(Entity entity) {
-        if (entity instanceof ServerPlayerEntity serverPlayer) {
-            return PlayerLanguage.getLanguage(serverPlayer);
-        }
-
-        return "en_us";
-    }
-
-    public Translator getTranslator() {
-        return translator;
+        return translationService.translateText("en_us", key, arguments);
     }
 }

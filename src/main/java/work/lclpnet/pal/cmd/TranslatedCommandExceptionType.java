@@ -3,21 +3,18 @@ package work.lclpnet.pal.cmd;
 import com.mojang.brigadier.exceptions.CommandExceptionType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.text.Text;
-import work.lclpnet.translations.Translator;
+
+import java.util.function.Function;
 
 public class TranslatedCommandExceptionType implements CommandExceptionType {
 
     private final String key;
-    private final Translator translator;
 
-    public TranslatedCommandExceptionType(Translator translator, String key) {
-        this.translator = translator;
+    public TranslatedCommandExceptionType(String key) {
         this.key = key;
     }
 
-    public CommandSyntaxException create(String locale) {
-        String translated = translator.translate(locale, key);
-
-        return new CommandSyntaxException(this, Text.literal(translated));
+    public CommandSyntaxException create(Function<String, Text> textFunction) {
+        return new CommandSyntaxException(this, textFunction.apply(key));
     }
 }

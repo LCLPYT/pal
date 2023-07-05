@@ -3,7 +3,7 @@ plugins {
     id 'fabric-loom' version '1.2-SNAPSHOT'
     id 'maven-publish'
     id 'gradle-build-utils' version '1.5.3'
-    id 'kibu-plugin-dev' version '0.5.1'
+    id 'kibu-plugin-dev' version '0.8.0'
     id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 
@@ -40,12 +40,7 @@ dependencies {
     // bundle these dependencies
     'work.lclpnet:json-config4j:1.0.0'.with {
         implementation it
-        bundle (it) { transitive = false }
-    }
-
-    "work.lclpnet:translations4j:${project.translations4j_version}".with {
-        implementation it
-        bundle (it) { transitive = false }
+        bundle it
     }
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'

@@ -3,7 +3,9 @@ package work.lclpnet.pal;
 import net.fabricmc.loader.api.FabricLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import work.lclpnet.kibu.access.PlayerLanguage;
 import work.lclpnet.kibu.plugin.KibuPlugin;
+import work.lclpnet.kibu.translate.TranslationService;
 import work.lclpnet.pal.cmd.HealCommand;
 import work.lclpnet.pal.config.ConfigManager;
 import work.lclpnet.pal.event.PlateListener;
@@ -13,6 +15,7 @@ import work.lclpnet.translations.Translator;
 import work.lclpnet.translations.loader.translation.SPITranslationLoader;
 
 import java.nio.file.Path;
+import java.util.Optional;
 
 public class PalPlugin extends KibuPlugin {
 
@@ -21,10 +24,8 @@ public class PalPlugin extends KibuPlugin {
 
     @Override
     public void loadKibuPlugin() {
-        final SPITranslationLoader loader = new SPITranslationLoader(getClass().getClassLoader());
-        final Translator translator = DefaultLanguageTranslator.create(loader).join();
-
-        final CommandService commandService = new CommandService(translator);
+        final TranslationService translationService = createTranslationService();
+        final CommandService commandService = new CommandService(translationService);
 
         new HealCommand(commandService).register(this);
 
@@ -34,5 +35,12 @@ public class PalPlugin extends KibuPlugin {
         manager.init();
 
         registerHooks(new PlateListener(manager));
+    }
+
+    private TranslationService createTranslationService() {
+        final SPITranslationLoader loader = new SPITranslationLoader(getClass().getClassLoader());
+        final Translator translator = DefaultLanguageTranslator.create(loader).join();
+
+        return new TranslationService(translator, player -> Optional.of(PlayerLanguage.getLanguage(player)));
     }
 }

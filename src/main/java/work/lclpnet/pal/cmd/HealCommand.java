@@ -6,14 +6,14 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Formatting;
 import work.lclpnet.kibu.plugin.cmd.CommandRegistrar;
+import work.lclpnet.kibu.translate.TranslationService;
+import work.lclpnet.kibu.translate.text.RootText;
 import work.lclpnet.pal.service.CommandService;
-import work.lclpnet.translations.Translator;
 
 public class HealCommand {
 
@@ -51,12 +51,10 @@ public class HealCommand {
     private void healLiving(LivingEntity living) {
         living.setHealth(living.getMaxHealth());
 
-        if (!(living instanceof PlayerEntity player)) return;  // no need to send messages to non-players
+        if (!(living instanceof ServerPlayerEntity player)) return;  // no need to send messages to non-players
 
-        Translator translator = commandService.getTranslator();
-        String msg = translator.translate(commandService.getLocaleOf(player), "pal.cmd.heal.healed_you");
-
-        living.sendMessage(Text.literal(msg).formatted(Formatting.GREEN));
+        TranslationService translationService = commandService.getTranslationService();
+        player.sendMessage(translationService.translateText(player, "pal.cmd.heal.healed_you").formatted(Formatting.GREEN));
     }
 
     private int heal(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
@@ -72,19 +70,18 @@ public class HealCommand {
             healLiving((LivingEntity) entity);
         }
 
-        Translator translator = commandService.getTranslator();
         ServerCommandSource source = ctx.getSource();
-        String msg;
+        RootText msg;
 
         int count = entities.size();
 
         if (count == 1) {
-            msg = translator.translate(commandService.getLocaleOf(source), "pal.cmd.heal.single", entities.get(0).getDisplayName().getString());
+            msg = commandService.translateText(source, "pal.cmd.heal.single", entities.get(0).getDisplayName().getString());
         } else {
-            msg = translator.translate(commandService.getLocaleOf(source), "pal.cmd.heal.multiple", count);
+            msg = commandService.translateText(source, "pal.cmd.heal.multiple", count);
         }
 
-        source.sendMessage(Text.literal(msg).formatted(Formatting.GREEN));
+        source.sendMessage(msg.formatted(Formatting.GREEN));
 
         return count;
     }
