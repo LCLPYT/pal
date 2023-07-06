@@ -11,5 +11,7 @@
   "pal.cmd.fly.single": "Toggled flight for %s",
   "pal.cmd.fly.multiple": "Toggled flight for %s players",
   "pal.cmd.chest.self": "Opened your ender chest",
-  "pal.cmd.chest.opened": "Opened %s's ender chest"
+  "pal.cmd.chest.opened": "Opened %s's ender chest",
+  "pal.cmd.die.single": "Killed %s",
+  "pal.cmd.die.multiple": "Killed %s entities"
 }

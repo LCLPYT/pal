@@ -11,5 +11,7 @@
   "pal.cmd.fly.single": "Flugmodus für %s umgeschaltet",
   "pal.cmd.fly.multiple": "Flugmodus für %s Spieler umgeschaltet",
   "pal.cmd.chest.self": "Deine Endertruhe geöffnet",
-  "pal.cmd.chest.opened": "Endertruhe von %s geöffnet"
+  "pal.cmd.chest.opened": "Endertruhe von %s geöffnet",
+  "pal.cmd.die.single": "%s wurde getötet",
+  "pal.cmd.die.multiple": "%s Lebewesen wurden getötet"
 }
