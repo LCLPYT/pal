@@ -16,5 +16,7 @@
   "pal.cmd.die.multiple": "Killed %s entities",
   "pal.cmd.inv.title": "%s's inventory",
   "pal.cmd.inv.opened": "Opened %s's inventory",
-  "pal.cmd.inv.self": "Opened your inventory"
+  "pal.cmd.inv.self": "Opened your inventory",
+  "pal.cmd.ping.self": "Your ping: %sms (%.3fsec)",
+  "pal.cmd.ping.other": "%s's ping: %sms (%.3fsec)"
 }

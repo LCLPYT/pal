@@ -16,5 +16,7 @@
   "pal.cmd.die.multiple": "%s Lebewesen wurden getötet",
   "pal.cmd.inv.title": "%s's Inventar",
   "pal.cmd.inv.opened": "Inventar von %s geöffnet",
-  "pal.cmd.inv.self": "Dein Inventar geöffnet"
+  "pal.cmd.inv.self": "Dein Inventar geöffnet",
+  "pal.cmd.ping.self": "Dein Ping: %sms (%.3fsek)",
+  "pal.cmd.ping.other": "%s's Ping: %sms (%.3fsek)"
 }
