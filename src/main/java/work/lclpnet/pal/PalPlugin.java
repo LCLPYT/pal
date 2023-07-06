@@ -6,6 +6,8 @@ import org.slf4j.LoggerFactory;
 import work.lclpnet.kibu.access.PlayerLanguage;
 import work.lclpnet.kibu.plugin.KibuPlugin;
 import work.lclpnet.kibu.translate.TranslationService;
+import work.lclpnet.pal.cmd.FeedCommand;
+import work.lclpnet.pal.cmd.FlyCommand;
 import work.lclpnet.pal.cmd.HealCommand;
 import work.lclpnet.pal.config.ConfigManager;
 import work.lclpnet.pal.event.PlateListener;
@@ -28,6 +30,8 @@ public class PalPlugin extends KibuPlugin {
         final CommandService commandService = new CommandService(translationService);
 
         new HealCommand(commandService).register(this);
+        new FeedCommand(commandService).register(this);
+        new FlyCommand(commandService).register(this);
 
         Path configFile = FabricLoader.getInstance().getConfigDir().resolve(ID).resolve("config.json");
         ConfigManager manager = new ConfigManager(configFile, logger);

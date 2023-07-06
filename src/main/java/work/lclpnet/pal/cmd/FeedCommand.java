@@ -16,13 +16,11 @@ import work.lclpnet.kibu.translate.TranslationService;
 import work.lclpnet.kibu.translate.text.RootText;
 import work.lclpnet.pal.service.CommandService;
 
-import java.util.ServiceLoader;
-
-public class HealCommand {
+public class FeedCommand {
 
     private final CommandService commandService;
 
-    public HealCommand(CommandService commandService) {
+    public FeedCommand(CommandService commandService) {
         this.commandService = commandService;
     }
 
@@ -31,62 +29,48 @@ public class HealCommand {
     }
 
     private LiteralArgumentBuilder<ServerCommandSource> command() {
-        return CommandManager.literal("heal")
+        return CommandManager.literal("feed")
                 .requires(s -> s.hasPermissionLevel(2))
-                .executes(this::healSelf)
-                .then(CommandManager.argument("entities", EntityArgumentType.entities())
-                        .executes(this::heal));
+                .executes(this::feedSelf)
+                .then(CommandManager.argument("players", EntityArgumentType.players())
+                        .executes(this::feed));
     }
 
-    private int healSelf(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
+    private int feedSelf(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource source = ctx.getSource();
-        Entity entity = source.getEntityOrThrow();
+        ServerPlayerEntity player = source.getPlayerOrThrow();
 
-        if (!(entity instanceof LivingEntity living)) {
-            throw commandService.createRequiresLivingException(source);
-        }
-
-        healLiving(living);
+        feedPlayer(player);
 
         return 0;
     }
 
-    private void healLiving(LivingEntity living) {
-        living.setHealth(living.getMaxHealth());
-
-        if (!(living instanceof ServerPlayerEntity player)) return;
-
+    private void feedPlayer(ServerPlayerEntity player) {
         HungerManager hungerManager = player.getHungerManager();
 
         hungerManager.setFoodLevel(20);
         hungerManager.setSaturationLevel(5f);
 
         TranslationService translationService = commandService.getTranslationService();
-        player.sendMessage(translationService.translateText(player, "pal.cmd.heal.healed_you").formatted(Formatting.GREEN));
+        player.sendMessage(translationService.translateText(player, "pal.cmd.feed.fed_you").formatted(Formatting.GREEN));
     }
 
-    private int heal(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        var entities = EntityArgumentType.getEntities(ctx, "entities").stream()
-                .filter(Entity::isLiving)
-                .toList();
+    private int feed(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
+        var players = EntityArgumentType.getPlayers(ctx, "players");
 
-        if (entities.isEmpty()) {
-            throw EntityArgumentType.ENTITY_NOT_FOUND_EXCEPTION.create();
-        }
-
-        for (Entity entity : entities) {
-            healLiving((LivingEntity) entity);
+        for (ServerPlayerEntity player : players) {
+            feedPlayer(player);
         }
 
         ServerCommandSource source = ctx.getSource();
         RootText msg;
 
-        int count = entities.size();
+        int count = players.size();
 
         if (count == 1) {
-            msg = commandService.translateText(source, "pal.cmd.heal.single", entities.get(0).getDisplayName().getString());
+            msg = commandService.translateText(source, "pal.cmd.feed.single", players.iterator().next().getDisplayName().getString());
         } else {
-            msg = commandService.translateText(source, "pal.cmd.heal.multiple", count);
+            msg = commandService.translateText(source, "pal.cmd.feed.multiple", count);
         }
 
         source.sendMessage(msg.formatted(Formatting.GREEN));

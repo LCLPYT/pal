@@ -2,5 +2,12 @@
   "pal.permissions.requires.living": "Dieser Befehl kann nur von einem lebenden Objekt ausgeführt werden",
   "pal.cmd.heal.healed_you": "Du wurdest geheilt",
   "pal.cmd.heal.single": "%s wurde geheilt",
-  "pal.cmd.heal.multiple": "%s Lebewesen wurden geheilt"
+  "pal.cmd.heal.multiple": "%s Lebewesen wurden geheilt",
+  "pal.cmd.feed.fed_you": "Du wurdest gesättigt",
+  "pal.cmd.feed.single": "%s wurde gesättigt",
+  "pal.cmd.feed.multiple": "%s Spieler wurden gesättigt",
+  "pal.cmd.fly.enabled": "Flugmodus aktiviert",
+  "pal.cmd.fly.disabled": "Flugmodus deaktiviert",
+  "pal.cmd.fly.single": "Flugmodus für %s umgeschaltet",
+  "pal.cmd.fly.multiple": "Flugmodus für %s Spieler umgeschaltet"
 }

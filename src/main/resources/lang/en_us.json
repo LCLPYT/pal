@@ -2,5 +2,12 @@
   "pal.permissions.requires.living": "A living entity is required to run this command here",
   "pal.cmd.heal.healed_you": "You have been healed",
   "pal.cmd.heal.single": "Healed %s",
-  "pal.cmd.heal.multiple": "Healed %s entities"
+  "pal.cmd.heal.multiple": "Healed %s entities",
+  "pal.cmd.feed.fed_you": "You have been saturated",
+  "pal.cmd.feed.single": "Fed %s",
+  "pal.cmd.feed.multiple": "Fed %s players",
+  "pal.cmd.fly.enabled": "Flying enabled",
+  "pal.cmd.fly.disabled": "Flying disabled",
+  "pal.cmd.fly.single": "Toggled flight for %s",
+  "pal.cmd.fly.multiple": "Toggled flight for %s players"
 }
