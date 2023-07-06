@@ -9,5 +9,7 @@
   "pal.cmd.fly.enabled": "Flying enabled",
   "pal.cmd.fly.disabled": "Flying disabled",
   "pal.cmd.fly.single": "Toggled flight for %s",
-  "pal.cmd.fly.multiple": "Toggled flight for %s players"
+  "pal.cmd.fly.multiple": "Toggled flight for %s players",
+  "pal.cmd.chest.self": "Opened your ender chest",
+  "pal.cmd.chest.opened": "Opened %s's ender chest"
 }

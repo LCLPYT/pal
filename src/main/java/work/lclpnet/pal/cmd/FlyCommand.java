@@ -15,6 +15,8 @@ import work.lclpnet.kibu.translate.TranslationService;
 import work.lclpnet.kibu.translate.text.RootText;
 import work.lclpnet.pal.service.CommandService;
 
+import static work.lclpnet.kibu.translate.text.FormatWrapper.styled;
+
 public class FlyCommand {
 
     private final CommandService commandService;
@@ -74,9 +76,9 @@ public class FlyCommand {
         int count = players.size();
 
         if (count == 1) {
-            msg = commandService.translateText(source, "pal.cmd.fly.single", players.iterator().next().getDisplayName().getString());
+            msg = commandService.translateText(source, "pal.cmd.fly.single", styled(players.iterator().next().getDisplayName().getString()).formatted(Formatting.YELLOW));
         } else {
-            msg = commandService.translateText(source, "pal.cmd.fly.multiple", count);
+            msg = commandService.translateText(source, "pal.cmd.fly.multiple", styled(count).formatted(Formatting.YELLOW));
         }
 
         source.sendMessage(msg.formatted(Formatting.GREEN));

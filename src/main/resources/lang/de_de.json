@@ -9,5 +9,7 @@
   "pal.cmd.fly.enabled": "Flugmodus aktiviert",
   "pal.cmd.fly.disabled": "Flugmodus deaktiviert",
   "pal.cmd.fly.single": "Flugmodus für %s umgeschaltet",
-  "pal.cmd.fly.multiple": "Flugmodus für %s Spieler umgeschaltet"
+  "pal.cmd.fly.multiple": "Flugmodus für %s Spieler umgeschaltet",
+  "pal.cmd.chest.self": "Deine Endertruhe geöffnet",
+  "pal.cmd.chest.opened": "Endertruhe von %s geöffnet"
 }

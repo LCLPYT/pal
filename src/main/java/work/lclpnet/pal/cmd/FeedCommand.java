@@ -16,6 +16,8 @@ import work.lclpnet.kibu.translate.TranslationService;
 import work.lclpnet.kibu.translate.text.RootText;
 import work.lclpnet.pal.service.CommandService;
 
+import static work.lclpnet.kibu.translate.text.FormatWrapper.styled;
+
 public class FeedCommand {
 
     private final CommandService commandService;
@@ -68,9 +70,9 @@ public class FeedCommand {
         int count = players.size();
 
         if (count == 1) {
-            msg = commandService.translateText(source, "pal.cmd.feed.single", players.iterator().next().getDisplayName().getString());
+            msg = commandService.translateText(source, "pal.cmd.feed.single", styled(players.iterator().next().getDisplayName().getString()).formatted(Formatting.YELLOW));
         } else {
-            msg = commandService.translateText(source, "pal.cmd.feed.multiple", count);
+            msg = commandService.translateText(source, "pal.cmd.feed.multiple", styled(count).formatted(Formatting.YELLOW));
         }
 
         source.sendMessage(msg.formatted(Formatting.GREEN));

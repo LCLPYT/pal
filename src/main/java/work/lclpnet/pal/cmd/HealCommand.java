@@ -16,7 +16,7 @@ import work.lclpnet.kibu.translate.TranslationService;
 import work.lclpnet.kibu.translate.text.RootText;
 import work.lclpnet.pal.service.CommandService;
 
-import java.util.ServiceLoader;
+import static work.lclpnet.kibu.translate.text.FormatWrapper.styled;
 
 public class HealCommand {
 
@@ -84,9 +84,9 @@ public class HealCommand {
         int count = entities.size();
 
         if (count == 1) {
-            msg = commandService.translateText(source, "pal.cmd.heal.single", entities.get(0).getDisplayName().getString());
+            msg = commandService.translateText(source, "pal.cmd.heal.single", styled(entities.get(0).getDisplayName().getString()).formatted(Formatting.YELLOW));
         } else {
-            msg = commandService.translateText(source, "pal.cmd.heal.multiple", count);
+            msg = commandService.translateText(source, "pal.cmd.heal.multiple", styled(count).formatted(Formatting.YELLOW));
         }
 
         source.sendMessage(msg.formatted(Formatting.GREEN));
