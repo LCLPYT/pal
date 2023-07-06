@@ -13,5 +13,8 @@
   "pal.cmd.chest.self": "Deine Endertruhe geöffnet",
   "pal.cmd.chest.opened": "Endertruhe von %s geöffnet",
   "pal.cmd.die.single": "%s wurde getötet",
-  "pal.cmd.die.multiple": "%s Lebewesen wurden getötet"
+  "pal.cmd.die.multiple": "%s Lebewesen wurden getötet",
+  "pal.cmd.inv.title": "%s's Inventar",
+  "pal.cmd.inv.opened": "Inventar von %s geöffnet",
+  "pal.cmd.inv.self": "Dein Inventar geöffnet"
 }

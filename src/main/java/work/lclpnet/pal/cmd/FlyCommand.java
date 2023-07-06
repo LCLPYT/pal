@@ -48,7 +48,13 @@ public class FlyCommand {
 
     private void enableFlying(ServerPlayerEntity player) {
         PlayerAbilities abilities = player.getAbilities();
+
         abilities.allowFlying = !abilities.allowFlying;
+
+        if (!abilities.allowFlying && abilities.flying) {
+            abilities.flying = false;
+        }
+
         player.sendAbilitiesUpdate();
 
         TranslationService translationService = commandService.getTranslationService();

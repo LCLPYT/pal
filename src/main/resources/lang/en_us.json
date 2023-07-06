@@ -13,5 +13,8 @@
   "pal.cmd.chest.self": "Opened your ender chest",
   "pal.cmd.chest.opened": "Opened %s's ender chest",
   "pal.cmd.die.single": "Killed %s",
-  "pal.cmd.die.multiple": "Killed %s entities"
+  "pal.cmd.die.multiple": "Killed %s entities",
+  "pal.cmd.inv.title": "%s's inventory",
+  "pal.cmd.inv.opened": "Opened %s's inventory",
+  "pal.cmd.inv.self": "Opened your inventory"
 }
