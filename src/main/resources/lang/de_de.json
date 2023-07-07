@@ -18,5 +18,9 @@
   "pal.cmd.inv.opened": "Inventar von %s geöffnet",
   "pal.cmd.inv.self": "Dein Inventar geöffnet",
   "pal.cmd.ping.self": "Dein Ping: %sms (%.3fsek)",
-  "pal.cmd.ping.other": "%s's Ping: %sms (%.3fsek)"
+  "pal.cmd.ping.other": "%s's Ping: %sms (%.3fsek)",
+  "pal.cmd.rename.no_item": "%s hat derzeit keinen Gegenstand in der Hand",
+  "pal.cmd.rename.no_item.self": "Du hast derzeit keinen Gegenstand in der Hand",
+  "pal.cmd.rename.renamed": "%s gehaltenes Item wurde zu \"%s\" umbenannt",
+  "pal.cmd.rename.renamed.self": "Dein gehaltenes Item wurde zu \"%s\" umbenannt"
 }

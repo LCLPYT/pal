@@ -18,5 +18,9 @@
   "pal.cmd.inv.opened": "Opened %s's inventory",
   "pal.cmd.inv.self": "Opened your inventory",
   "pal.cmd.ping.self": "Your ping: %sms (%.3fsec)",
-  "pal.cmd.ping.other": "%s's ping: %sms (%.3fsec)"
+  "pal.cmd.ping.other": "%s's ping: %sms (%.3fsec)",
+  "pal.cmd.rename.no_item": "%s is not currently holding an item",
+  "pal.cmd.rename.no_item.self": "You are not currently holding an item",
+  "pal.cmd.rename.renamed": "Renamed %s held item to \"%s\"",
+  "pal.cmd.rename.renamed.self": "Renamed your held item to \"%s\""
 }

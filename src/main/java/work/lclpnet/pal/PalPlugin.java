@@ -34,6 +34,7 @@ public class PalPlugin extends KibuPlugin {
         new DieCommand(commandService).register(this);
         new InventoryCommand(commandService).register(this);
         new PingCommand(commandService).register(this);
+        new RenameCommand(commandService).register(this);
 
         Path configFile = FabricLoader.getInstance().getConfigDir().resolve(ID).resolve("config.json");
         ConfigManager manager = new ConfigManager(configFile, logger);
