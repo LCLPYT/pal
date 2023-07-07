@@ -10,6 +10,7 @@ import work.lclpnet.pal.cmd.*;
 import work.lclpnet.pal.config.ConfigManager;
 import work.lclpnet.pal.event.PlateListener;
 import work.lclpnet.pal.service.CommandService;
+import work.lclpnet.pal.service.FormattingService;
 import work.lclpnet.translations.DefaultLanguageTranslator;
 import work.lclpnet.translations.Translator;
 import work.lclpnet.translations.loader.translation.SPITranslationLoader;
@@ -26,6 +27,7 @@ public class PalPlugin extends KibuPlugin {
     public void loadKibuPlugin() {
         final TranslationService translationService = createTranslationService();
         final CommandService commandService = new CommandService(translationService);
+        final FormattingService formattingService = new FormattingService();
 
         new HealCommand(commandService).register(this);
         new FeedCommand(commandService).register(this);
@@ -34,7 +36,8 @@ public class PalPlugin extends KibuPlugin {
         new DieCommand(commandService).register(this);
         new InventoryCommand(commandService).register(this);
         new PingCommand(commandService).register(this);
-        new RenameCommand(commandService).register(this);
+        new RenameCommand(commandService, formattingService).register(this);
+        new SayTextCommand(formattingService).register(this);
 
         Path configFile = FabricLoader.getInstance().getConfigDir().resolve(ID).resolve("config.json");
         ConfigManager manager = new ConfigManager(configFile, logger);
