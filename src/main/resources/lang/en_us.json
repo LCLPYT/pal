@@ -22,5 +22,11 @@
   "pal.cmd.rename.no_item": "%s is not currently holding an item",
   "pal.cmd.rename.no_item.self": "You are not currently holding an item",
   "pal.cmd.rename.renamed": "Renamed %s held item to \"%s\"",
-  "pal.cmd.rename.renamed.self": "Renamed your held item to \"%s\""
+  "pal.cmd.rename.renamed.self": "Renamed your held item to \"%s\"",
+  "pal.cmd.speed.walk.set.single": "Set %s's walking speed to %.2f",
+  "pal.cmd.speed.fly.set.single": "Set %s's flying speed to %.2f",
+  "pal.cmd.speed.walk.set.multiple": "Set walking speed of %s players to %.2f",
+  "pal.cmd.speed.fly.set.multiple": "Set flying speed of %s players to %.2f",
+  "pal.cmd.speed.all.reset.single": "Reset speed of %s",
+  "pal.cmd.speed.all.reset.multiple": "Reset speed of %s players"
 }

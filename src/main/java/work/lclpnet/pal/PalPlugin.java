@@ -38,6 +38,7 @@ public class PalPlugin extends KibuPlugin {
         new PingCommand(commandService).register(this);
         new RenameCommand(commandService, formattingService).register(this);
         new SayTextCommand(formattingService).register(this);
+        new SpeedCommand(commandService).register(this);
 
         Path configFile = FabricLoader.getInstance().getConfigDir().resolve(ID).resolve("config.json");
         ConfigManager manager = new ConfigManager(configFile, logger);

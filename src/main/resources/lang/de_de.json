@@ -22,5 +22,11 @@
   "pal.cmd.rename.no_item": "%s hat derzeit keinen Gegenstand in der Hand",
   "pal.cmd.rename.no_item.self": "Du hast derzeit keinen Gegenstand in der Hand",
   "pal.cmd.rename.renamed": "%s gehaltenes Item wurde zu \"%s\" umbenannt",
-  "pal.cmd.rename.renamed.self": "Dein gehaltenes Item wurde zu \"%s\" umbenannt"
+  "pal.cmd.rename.renamed.self": "Dein gehaltenes Item wurde zu \"%s\" umbenannt",
+  "pal.cmd.speed.walk.set.single": "Laufgeschwindigkeit von %s auf %.2f gesetzt",
+  "pal.cmd.speed.fly.set.single": "Fluggeschwindigkeit von %s auf %.2f gesetzt",
+  "pal.cmd.speed.walk.set.multiple": "Laufgeschwindigkeit von %s Spielern auf %.2f gesetzt",
+  "pal.cmd.speed.fly.set.multiple": "Fluggeschwindigkeit von %s Spielern auf %.2f gesetzt",
+  "pal.cmd.speed.all.reset.single": "Geschwindigkeit von %s zurückgesetzt",
+  "pal.cmd.speed.all.reset.multiple": "Geschwindigkeit von %s Spielern zurückgesetzt"
 }
