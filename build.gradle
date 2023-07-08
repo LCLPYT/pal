@@ -1,3 +1,5 @@
+import work.lclpnet.build.task.GithubDeploymentTask
+
 plugins {
     id 'java'
     id 'fabric-loom' version '1.2-SNAPSHOT'
@@ -49,15 +51,6 @@ dependencies {
     // testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
 }
 
-loom {
-    // if you want to develop a plugin for dedicated servers, uncomment the following block
-    /*serverOnlyMinecraftJar()
-
-    runs {
-        remove client
-    }*/
-}
-
 test {
     useJUnitPlatform()
 }
@@ -79,7 +72,7 @@ java {
     withSourcesJar()
 }
 
-[jar, shadowJar].each {
+[jar, sourcesJar, shadowJar].each {
     it.from("LICENSE") {
         rename { "${it}_${project.archivesBaseName}" }
     }
@@ -89,17 +82,35 @@ shadowJar {
     mergeServiceFiles()
 }
 
+def env = System.getenv()
+
+tasks.register("github", GithubDeploymentTask) {
+    dependsOn tasks.remapShadowJar
+
+    config {
+        token = env.get("GITHUB_TOKEN")
+        repository = env.get("GITHUB_REPOSITORY")
+    }
+
+    release {
+        title = "[$project.minecraft_version] $project.name $project.version"
+        tag = buildUtils.latestTag()
+    }
+
+    assets.add(tasks.remapShadowJar.archiveFile.get())
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
             artifactId = project.archives_base_name
 
-            artifact remapJar
+            artifact remapShadowJar
             artifact remapSourcesJar
 
             pom {
-                name = 'Example Plugin'
-                description = 'This is an example description! Tell everyone what your plugin is about!'
+                name = 'Pal'
+                description = 'A kibu plugin for Fabric that adds essential functionally for minigame servers'
             }
         }
     }
