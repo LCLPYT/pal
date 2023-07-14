@@ -39,8 +39,12 @@ dependencies {
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
     implementation 'org.json:json:20230227'
 
-    implementation 'com.google.dagger:dagger:2.46.1'
+    'com.google.dagger:dagger:2.46.1'.with {
+        implementation it
+        bundle it
+    }
     annotationProcessor 'com.google.dagger:dagger-compiler:2.46.1'
+    bundle 'javax.inject:javax.inject:1'
 
     // bundle these dependencies
     'work.lclpnet:json-config4j:1.0.0'.with {
