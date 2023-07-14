@@ -22,7 +22,6 @@ public class PalPlugin extends KibuPlugin implements TranslatedPlugin {
     private static final Logger logger = LoggerFactory.getLogger(ID);
     private TranslationService translationService = null;
     private PalComponent component = null;
-    private TranslationsLoadedCallback translationHook;
 
     @Override
     public void loadKibuPlugin() {
@@ -32,12 +31,10 @@ public class PalPlugin extends KibuPlugin implements TranslatedPlugin {
 
         final CompletableFuture<Void> translationsFuture = new CompletableFuture<>();
 
-        registerHook(TranslationsLoadedCallback.HOOK, translationHook = service -> {
-            if (translationHook != null && service.getTranslator().hasTranslation("en_us", "pal.permissions.requires.living")) {
-                translationsFuture.complete(null);
-                unregisterHook(TranslationsLoadedCallback.HOOK, translationHook);
-                translationHook = null;
-            }
+        registerHook(TranslationsLoadedCallback.HOOK, service -> {
+            if (translationsFuture.isDone() || !service.getTranslator().hasTranslation("en_us", "pal.permissions.requires.living")) return;
+
+            translationsFuture.complete(null);
         });
 
         CompletableFuture.allOf(
