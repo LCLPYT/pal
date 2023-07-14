@@ -1,56 +1,61 @@
 package work.lclpnet.pal;
 
-import net.fabricmc.loader.api.FabricLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import work.lclpnet.kibu.access.PlayerLanguage;
 import work.lclpnet.kibu.plugin.KibuPlugin;
+import work.lclpnet.kibu.plugin.hook.HookListenerModule;
 import work.lclpnet.kibu.translate.TranslationService;
-import work.lclpnet.pal.cmd.*;
-import work.lclpnet.pal.config.ConfigManager;
-import work.lclpnet.pal.event.PlateListener;
-import work.lclpnet.pal.service.CommandService;
-import work.lclpnet.pal.service.FormattingService;
+import work.lclpnet.pal.cmd.PalCommand;
+import work.lclpnet.pal.di.DaggerPalComponent;
+import work.lclpnet.pal.di.PalComponent;
+import work.lclpnet.pal.di.PalModule;
 import work.lclpnet.translations.DefaultLanguageTranslator;
-import work.lclpnet.translations.Translator;
 import work.lclpnet.translations.loader.translation.SPITranslationLoader;
 
-import java.nio.file.Path;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 public class PalPlugin extends KibuPlugin {
 
     public static final String ID = "pal";
     private static final Logger logger = LoggerFactory.getLogger(ID);
+    private PalComponent component = null;
 
     @Override
     public void loadKibuPlugin() {
-        final TranslationService translationService = createTranslationService();
-        final CommandService commandService = new CommandService(translationService);
-        final FormattingService formattingService = new FormattingService();
+        TranslationService translationService = createTranslationService();
 
-        new HealCommand(commandService).register(this);
-        new FeedCommand(commandService).register(this);
-        new FlyCommand(commandService).register(this);
-        new ChestCommand(commandService).register(this);
-        new DieCommand(commandService).register(this);
-        new InventoryCommand(commandService).register(this);
-        new PingCommand(commandService).register(this);
-        new RenameCommand(commandService, formattingService).register(this);
-        new SayTextCommand(formattingService).register(this);
-        new SpeedCommand(commandService).register(this);
+        component = DaggerPalComponent.builder()
+                .palModule(new PalModule(logger, translationService))
+                .build();
 
-        Path configFile = FabricLoader.getInstance().getConfigDir().resolve(ID).resolve("config.json");
-        ConfigManager manager = new ConfigManager(configFile, logger);
+        var translator = (DefaultLanguageTranslator) translationService.getTranslator();
 
-        manager.init();
+        CompletableFuture.allOf(
+                translator.reload(),
+                component.configManager().init()
+        ).exceptionally(err -> {
+            // handle any errors and recover
+            logger.error("Failed to initialize plugin 'pal'", err);
+            return null;
+        }).thenRun(this::onLoaded);
+    }
 
-        registerHooks(new PlateListener(manager));
+    private void onLoaded() {
+        for (HookListenerModule hookModule : component.hooks()) {
+            registerHooks(hookModule);
+        }
+
+        for (PalCommand cmd : component.commands()) {
+            cmd.register(this);
+        }
     }
 
     private TranslationService createTranslationService() {
-        final SPITranslationLoader loader = new SPITranslationLoader(getClass().getClassLoader());
-        final Translator translator = DefaultLanguageTranslator.create(loader).join();
+        ClassLoader classLoader = getClass().getClassLoader();
+        SPITranslationLoader loader = new SPITranslationLoader(classLoader);
+        DefaultLanguageTranslator translator = new DefaultLanguageTranslator(loader);
 
         return new TranslationService(translator, player -> Optional.of(PlayerLanguage.getLanguage(player)));
     }

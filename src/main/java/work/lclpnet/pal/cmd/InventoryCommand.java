@@ -5,7 +5,6 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.EnderChestInventory;
 import net.minecraft.screen.GenericContainerScreenHandler;
 import net.minecraft.screen.ScreenHandlerFactory;
 import net.minecraft.screen.ScreenHandlerType;
@@ -13,23 +12,26 @@ import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import work.lclpnet.kibu.plugin.cmd.CommandRegistrar;
 import work.lclpnet.kibu.translate.TranslationService;
 import work.lclpnet.kibu.translate.text.RootText;
 import work.lclpnet.pal.service.CommandService;
 
+import javax.inject.Inject;
+
 import static work.lclpnet.kibu.translate.text.FormatWrapper.styled;
 
-public class InventoryCommand {
+public class InventoryCommand implements PalCommand {
 
     private final CommandService commandService;
 
+    @Inject
     public InventoryCommand(CommandService commandService) {
         this.commandService = commandService;
     }
 
+    @Override
     public void register(CommandRegistrar registrar) {
         registrar.registerCommand(command("inventory"));
         registrar.registerCommand(command("inv"));

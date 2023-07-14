@@ -4,8 +4,6 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.HungerManager;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
@@ -16,16 +14,20 @@ import work.lclpnet.kibu.translate.TranslationService;
 import work.lclpnet.kibu.translate.text.RootText;
 import work.lclpnet.pal.service.CommandService;
 
+import javax.inject.Inject;
+
 import static work.lclpnet.kibu.translate.text.FormatWrapper.styled;
 
-public class FeedCommand {
+public class FeedCommand implements PalCommand {
 
     private final CommandService commandService;
 
+    @Inject
     public FeedCommand(CommandService commandService) {
         this.commandService = commandService;
     }
 
+    @Override
     public void register(CommandRegistrar registrar) {
         registrar.registerCommand(command());
     }

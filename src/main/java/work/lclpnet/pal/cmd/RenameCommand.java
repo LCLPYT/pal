@@ -19,16 +19,20 @@ import work.lclpnet.kibu.plugin.cmd.CommandRegistrar;
 import work.lclpnet.pal.service.CommandService;
 import work.lclpnet.pal.service.FormattingService;
 
-public class RenameCommand {
+import javax.inject.Inject;
+
+public class RenameCommand implements PalCommand {
 
     private final CommandService commandService;
     private final FormattingService formattingService;
 
+    @Inject
     public RenameCommand(CommandService commandService, FormattingService formattingService) {
         this.commandService = commandService;
         this.formattingService = formattingService;
     }
 
+    @Override
     public void register(CommandRegistrar registrar) {
         registrar.registerCommand(command());
     }

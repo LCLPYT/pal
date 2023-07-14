@@ -8,22 +8,25 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Formatting;
-import org.w3c.dom.Text;
 import work.lclpnet.kibu.plugin.cmd.CommandRegistrar;
 import work.lclpnet.kibu.translate.TranslationService;
 import work.lclpnet.kibu.translate.text.RootText;
 import work.lclpnet.pal.service.CommandService;
 
+import javax.inject.Inject;
+
 import static work.lclpnet.kibu.translate.text.FormatWrapper.styled;
 
-public class PingCommand {
+public class PingCommand implements PalCommand {
 
     private final CommandService commandService;
 
+    @Inject
     public PingCommand(CommandService commandService) {
         this.commandService = commandService;
     }
 
+    @Override
     public void register(CommandRegistrar registrar) {
         registrar.registerCommand(command());
     }

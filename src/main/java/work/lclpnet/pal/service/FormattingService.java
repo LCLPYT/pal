@@ -6,11 +6,17 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+@Singleton
 public class FormattingService {
+
+    @Inject
+    public FormattingService() {}
 
     public MutableText parseText(String string, char formatChar) {
         String[] parts = string.split(Pattern.quote(String.valueOf(formatChar)));

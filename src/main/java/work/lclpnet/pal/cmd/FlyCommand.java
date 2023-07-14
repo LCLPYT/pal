@@ -15,16 +15,20 @@ import work.lclpnet.kibu.translate.TranslationService;
 import work.lclpnet.kibu.translate.text.RootText;
 import work.lclpnet.pal.service.CommandService;
 
+import javax.inject.Inject;
+
 import static work.lclpnet.kibu.translate.text.FormatWrapper.styled;
 
-public class FlyCommand {
+public class FlyCommand implements PalCommand {
 
     private final CommandService commandService;
 
+    @Inject
     public FlyCommand(CommandService commandService) {
         this.commandService = commandService;
     }
 
+    @Override
     public void register(CommandRegistrar registrar) {
         registrar.registerCommand(command());
     }

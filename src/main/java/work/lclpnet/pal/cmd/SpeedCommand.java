@@ -16,21 +16,24 @@ import work.lclpnet.kibu.plugin.cmd.CommandRegistrar;
 import work.lclpnet.kibu.translate.text.RootText;
 import work.lclpnet.pal.service.CommandService;
 
+import javax.inject.Inject;
 import java.util.Collection;
 import java.util.List;
 
 import static work.lclpnet.kibu.translate.text.FormatWrapper.styled;
 
-public class SpeedCommand {
+public class SpeedCommand implements PalCommand {
 
     private static final int TYPE_WALK = 0b01, TYPE_FLY = 0b10, TYPE_BOTH = TYPE_WALK | TYPE_FLY;
 
     private final CommandService commandService;
 
+    @Inject
     public SpeedCommand(CommandService commandService) {
         this.commandService = commandService;
     }
 
+    @Override
     public void register(CommandRegistrar registrar) {
         registrar.registerCommand(command());
     }

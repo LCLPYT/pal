@@ -18,17 +18,21 @@ import work.lclpnet.kibu.translate.TranslationService;
 import work.lclpnet.kibu.translate.text.RootText;
 import work.lclpnet.pal.service.CommandService;
 
+import javax.inject.Inject;
+
 import static work.lclpnet.kibu.translate.text.FormatWrapper.styled;
 
-public class ChestCommand {
+public class ChestCommand implements PalCommand {
 
+    private static final Text containerName = Text.translatable("container.enderchest");
     private final CommandService commandService;
-    private final Text containerName = Text.translatable("container.enderchest");
 
+    @Inject
     public ChestCommand(CommandService commandService) {
         this.commandService = commandService;
     }
 
+    @Override
     public void register(CommandRegistrar registrar) {
         registrar.registerCommand(command());
     }

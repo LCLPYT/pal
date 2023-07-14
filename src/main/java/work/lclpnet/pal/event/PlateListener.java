@@ -20,6 +20,7 @@ import work.lclpnet.kibu.plugin.hook.HookRegistrar;
 import work.lclpnet.pal.config.ConfigAccess;
 import work.lclpnet.pal.config.PalConfig;
 
+import javax.inject.Inject;
 import java.util.WeakHashMap;
 
 public class PlateListener implements HookListenerModule {
@@ -27,6 +28,7 @@ public class PlateListener implements HookListenerModule {
     private final ConfigAccess configAccess;
     private final WeakHashMap<Entity, Void> noFall = new WeakHashMap<>();
 
+    @Inject
     public PlateListener(ConfigAccess configAccess) {
         this.configAccess = configAccess;
     }

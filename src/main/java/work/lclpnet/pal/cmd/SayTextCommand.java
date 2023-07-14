@@ -11,14 +11,18 @@ import net.minecraft.text.Text;
 import work.lclpnet.kibu.plugin.cmd.CommandRegistrar;
 import work.lclpnet.pal.service.FormattingService;
 
-public class SayTextCommand {
+import javax.inject.Inject;
+
+public class SayTextCommand implements PalCommand {
 
     private final FormattingService formattingService;
 
+    @Inject
     public SayTextCommand(FormattingService formattingService) {
         this.formattingService = formattingService;
     }
 
+    @Override
     public void register(CommandRegistrar registrar) {
         registrar.registerCommand(command());
     }
