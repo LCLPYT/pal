@@ -28,5 +28,6 @@
   "pal.cmd.speed.walk.set.multiple": "Set walking speed of %s players to %.2f",
   "pal.cmd.speed.fly.set.multiple": "Set flying speed of %s players to %.2f",
   "pal.cmd.speed.all.reset.single": "Reset speed of %s",
-  "pal.cmd.speed.all.reset.multiple": "Reset speed of %s players"
+  "pal.cmd.speed.all.reset.multiple": "Reset speed of %s players",
+  "pal.teleporter.blocked": "Something is blocking the way..."
 }

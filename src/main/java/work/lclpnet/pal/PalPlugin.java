@@ -26,7 +26,7 @@ public class PalPlugin extends KibuPlugin implements TranslatedPlugin {
     @Override
     public void loadKibuPlugin() {
         component = DaggerPalComponent.builder()
-                .palModule(new PalModule(logger, translationService))
+                .palModule(new PalModule(logger, translationService, getScheduler()))
                 .build();
 
         final CompletableFuture<Void> translationsFuture = new CompletableFuture<>();

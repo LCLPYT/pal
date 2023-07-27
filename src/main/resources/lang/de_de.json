@@ -28,5 +28,6 @@
   "pal.cmd.speed.walk.set.multiple": "Laufgeschwindigkeit von %s Spielern auf %.2f gesetzt",
   "pal.cmd.speed.fly.set.multiple": "Fluggeschwindigkeit von %s Spielern auf %.2f gesetzt",
   "pal.cmd.speed.all.reset.single": "Geschwindigkeit von %s zurückgesetzt",
-  "pal.cmd.speed.all.reset.multiple": "Geschwindigkeit von %s Spielern zurückgesetzt"
+  "pal.cmd.speed.all.reset.multiple": "Geschwindigkeit von %s Spielern zurückgesetzt",
+  "pal.teleporter.blocked": "Etwas blockiert den Weg..."
 }
