@@ -7,7 +7,7 @@ import work.lclpnet.config.json.JsonConfigFactory;
 public class PalConfig implements JsonConfig {
 
     public boolean enablePlates = false, enablePads = false, enableElevators = false, enableTeleporters = false;
-    public boolean padLegacyAmount = false;
+    public boolean padLegacyAmount = false, elevatorLegacyAmount = false;
     public float plateMotionY = 1f, plateStrength = 2f;
 
     public PalConfig() {}
@@ -50,6 +50,10 @@ public class PalConfig implements JsonConfig {
                 if (elevators.has("enabled")) {
                     enableElevators = elevators.getBoolean("enabled");
                 }
+
+                if (elevators.has("legacy_amount")) {
+                    elevatorLegacyAmount = elevators.getBoolean("legacy_amount");
+                }
             }
 
             if (world.has("teleporters")) {
@@ -82,6 +86,7 @@ public class PalConfig implements JsonConfig {
         world.put("pads", pads);
 
         JSONObject elevators = new JSONObject();
+        elevators.put("legacy_amount", elevatorLegacyAmount);
         elevators.put("enabled", enableElevators);
 
         world.put("elevators", elevators);

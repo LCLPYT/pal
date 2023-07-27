@@ -7,7 +7,10 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.DamageTypes;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.particle.BlockStateParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -144,6 +147,57 @@ public class PlateListener implements HookListenerModule {
 
             useTeleporter(player, world, target);
         }
+
+        if (config.enableElevators && isElevator(world, down)) {
+            useElevator(player, world, down);
+        }
+    }
+
+    private void useElevator(ServerPlayerEntity player, ServerWorld world, BlockPos pos) {
+        double amount = calculatePadAmount(world, pos, config.elevatorLegacyAmount);
+
+        player.removeStatusEffect(StatusEffects.LEVITATION);
+        player.addStatusEffect(new StatusEffectInstance(StatusEffects.LEVITATION, 200, (int) (amount * 5) + 10));
+
+        int startX = pos.getX(), startZ = pos.getZ();
+
+        scheduler.interval(task -> {
+            double x = player.getX(), y = player.getY(), z = player.getZ();
+
+            if (Math.floor(x) != startX || Math.floor(z) != startZ) {
+                player.removeStatusEffect(StatusEffects.LEVITATION);
+            }
+
+            StatusEffectInstance effect = player.getStatusEffect(StatusEffects.LEVITATION);
+
+            if (effect == null) {
+                task.cancel();
+
+                var particle = new BlockStateParticleEffect(ParticleTypes.FALLING_DUST, Blocks.PURPUR_BLOCK.getDefaultState());
+                world.spawnParticles(particle, x, y, z, 100, 1, 1, 1, 0);
+                world.playSound(null, x, y, z, SoundEvents.ENTITY_WITHER_BREAK_BLOCK, SoundCategory.PLAYERS, 2, 1);
+
+                synchronized (PlateListener.this) {
+                    noFall.put(player, null);
+                }
+
+                return;
+            }
+
+            int duration = effect.getDuration();
+
+            if (duration > 45) {
+                world.spawnParticles(ParticleTypes.FIREWORK, x, y + 0.75, z, 5, 0.1, 0.1, 0.1, 0.25);
+            } else if (duration == 40) {
+                world.spawnParticles(ParticleTypes.FIREWORK, x, y, z, 20, 0.1, 0.1, 0.1, 0);
+            } else if (duration == 30) {
+                world.spawnParticles(ParticleTypes.FIREWORK, x, y, z, 15, 0.1, 0.1, 0.1, 0);
+            } else if (duration == 20) {
+                world.spawnParticles(ParticleTypes.FIREWORK, x, y, z, 10, 0.1, 0.1, 0.1, 0);
+            } else if (duration == 10) {
+                world.spawnParticles(ParticleTypes.FIREWORK, x, y, z, 5, 0.1, 0.1, 0.1, 0);
+            }
+        }, 1, 0);
     }
 
     private void handleJumpPad(ServerPlayerEntity player, ServerWorld world, BlockPos pos) {
@@ -151,7 +205,7 @@ public class PlateListener implements HookListenerModule {
 
         if (padCooldown.contains(uuid)) return;
 
-        double amount = calculatePadAmount(world, pos);
+        double amount = calculatePadAmount(world, pos, config.padLegacyAmount);
 
         Vec3d velocity = new Vec3d(0, amount, 0);
         VelocityModifier.setVelocity(player, velocity);
@@ -169,10 +223,10 @@ public class PlateListener implements HookListenerModule {
         player.getWorld().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.BLOCK_PISTON_EXTEND, SoundCategory.BLOCKS, 3, 2);
     }
 
-    private double calculatePadAmount(World world, BlockPos pos) {
-        int emeraldBlocks = countEmeraldBlocks(world, pos);
+    private double calculatePadAmount(World world, BlockPos pos, boolean legacy) {
+        int emeraldBlocks = countBlocks(world, pos);
 
-        if (config.padLegacyAmount) {
+        if (legacy) {
             return emeraldBlocks + 1;
         }
 
@@ -181,7 +235,7 @@ public class PlateListener implements HookListenerModule {
         return 1.25 + emeraldBlocks / 5d;
     }
 
-    private int countEmeraldBlocks(World world, BlockPos start) {
+    private int countBlocks(World world, BlockPos start) {
         BlockPos.Mutable pos = start.mutableCopy();
         BlockState state;
         int i = 0;
@@ -200,19 +254,41 @@ public class PlateListener implements HookListenerModule {
 
     private boolean isPad(World world, BlockPos pos) {
         BlockState state = world.getBlockState(pos);
-        if (!state.isOf(Blocks.PISTON) || state.get(PistonBlock.FACING) != Direction.UP) return false;
 
-        Direction[] directions = new Direction[] { Direction.SOUTH, Direction.EAST, Direction.NORTH, Direction.WEST };
-
-        for (Direction direction : directions) {
-            state = world.getBlockState(pos.offset(direction));
-            if (!state.isOf(Blocks.PISTON) || state.get(PistonBlock.FACING) != direction.getOpposite()) return false;
+        if (!state.isOf(Blocks.PISTON) || state.get(PistonBlock.FACING) != Direction.UP || !isSurroundedByPistons(world, pos)) {
+            return false;
         }
 
         return world.getBlockState(pos.add(1, 0, 1)).isOf(Blocks.IRON_BLOCK) &&
                 world.getBlockState(pos.add(-1, 0, 1)).isOf(Blocks.IRON_BLOCK) &&
                 world.getBlockState(pos.add(1, 0, -1)).isOf(Blocks.IRON_BLOCK) &&
                 world.getBlockState(pos.add(-1, 0, -1)).isOf(Blocks.IRON_BLOCK);
+    }
+
+    private boolean isElevator(ServerWorld world, BlockPos pos) {
+        BlockState state = world.getBlockState(pos);
+        if (!state.isOf(Blocks.BEACON) || !isSurroundedByPistons(world, pos)) return false;
+
+        return world.getBlockState(pos.add(1, 0, 1)).isOf(Blocks.DIAMOND_BLOCK) &&
+                world.getBlockState(pos.add(-1, 0, 1)).isOf(Blocks.DIAMOND_BLOCK) &&
+                world.getBlockState(pos.add(1, 0, -1)).isOf(Blocks.DIAMOND_BLOCK) &&
+                world.getBlockState(pos.add(-1, 0, -1)).isOf(Blocks.DIAMOND_BLOCK);
+    }
+
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    private boolean isSurroundedByPistons(World world, BlockPos pos) {
+        Direction[] directions = new Direction[] { Direction.SOUTH, Direction.EAST, Direction.NORTH, Direction.WEST };
+        BlockState state;
+
+        for (Direction direction : directions) {
+            state = world.getBlockState(pos.offset(direction));
+
+            if (!state.isOf(Blocks.PISTON) || state.get(PistonBlock.FACING) != direction.getOpposite()) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private void useTeleporter(ServerPlayerEntity player, ServerWorld world, BlockPos target) {
