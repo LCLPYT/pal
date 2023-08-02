@@ -3,41 +3,45 @@ package work.lclpnet.pal.di;
 import dagger.Binds;
 import dagger.Module;
 import dagger.multibindings.IntoSet;
+import work.lclpnet.kibu.plugin.cmd.KibuCommand;
 import work.lclpnet.pal.cmd.*;
 
 /**
- * Dagger module that configures all {@link PalCommand}s.
+ * Dagger module that configures all {@link KibuCommand}s.
  */
 @Module
 public interface CommandModule {
 
     @Binds @IntoSet
-    PalCommand provideHealCommand(HealCommand cmd);
+    KibuCommand provideHealCommand(HealCommand cmd);
 
     @Binds @IntoSet
-    PalCommand provideFeedCommand(FeedCommand cmd);
+    KibuCommand provideFeedCommand(FeedCommand cmd);
 
     @Binds @IntoSet
-    PalCommand provideFlyCommand(FlyCommand cmd);
+    KibuCommand provideFlyCommand(FlyCommand cmd);
 
     @Binds @IntoSet
-    PalCommand provideChestCommand(ChestCommand cmd);
+    KibuCommand provideChestCommand(ChestCommand cmd);
 
     @Binds @IntoSet
-    PalCommand provideDieCommand(DieCommand cmd);
+    KibuCommand provideDieCommand(DieCommand cmd);
 
     @Binds @IntoSet
-    PalCommand provideInventoryCommand(InventoryCommand cmd);
+    KibuCommand provideInventoryCommand(InventoryCommand cmd);
 
     @Binds @IntoSet
-    PalCommand providePingCommand(PingCommand cmd);
+    KibuCommand providePingCommand(PingCommand cmd);
 
     @Binds @IntoSet
-    PalCommand provideRenameCommand(RenameCommand cmd);
+    KibuCommand provideRenameCommand(RenameCommand cmd);
 
     @Binds @IntoSet
-    PalCommand provideSayTextCommand(SayTextCommand cmd);
+    KibuCommand provideSayTextCommand(SayTextCommand cmd);
 
     @Binds @IntoSet
-    PalCommand provideSpeedCommand(SpeedCommand cmd);
+    KibuCommand provideSpeedCommand(SpeedCommand cmd);
+
+    @Binds @IntoSet
+    KibuCommand provideWorldCommand(WorldCommand cmd);
 }

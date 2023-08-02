@@ -13,6 +13,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Formatting;
 import work.lclpnet.kibu.plugin.cmd.CommandRegistrar;
+import work.lclpnet.kibu.plugin.cmd.KibuCommand;
 import work.lclpnet.kibu.translate.text.RootText;
 import work.lclpnet.pal.service.CommandService;
 
@@ -22,7 +23,7 @@ import java.util.List;
 
 import static work.lclpnet.kibu.translate.text.FormatWrapper.styled;
 
-public class SpeedCommand implements PalCommand {
+public class SpeedCommand implements KibuCommand {
 
     private static final int TYPE_WALK = 0b01, TYPE_FLY = 0b10, TYPE_BOTH = TYPE_WALK | TYPE_FLY;
 

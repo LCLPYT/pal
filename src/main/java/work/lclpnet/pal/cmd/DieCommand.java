@@ -10,6 +10,7 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.util.Formatting;
 import work.lclpnet.kibu.plugin.cmd.CommandRegistrar;
+import work.lclpnet.kibu.plugin.cmd.KibuCommand;
 import work.lclpnet.kibu.translate.text.RootText;
 import work.lclpnet.pal.service.CommandService;
 
@@ -17,7 +18,7 @@ import javax.inject.Inject;
 
 import static work.lclpnet.kibu.translate.text.FormatWrapper.styled;
 
-public class DieCommand implements PalCommand {
+public class DieCommand implements KibuCommand {
 
     private final CommandService commandService;
 

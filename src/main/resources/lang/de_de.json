@@ -1,5 +1,7 @@
 {
   "pal.permissions.requires.living": "Dieser Befehl kann nur von einem lebenden Objekt ausgeführt werden",
+  "pal.errors.world.unknown": "Unbekannte Welt %s",
+  "pal.errors.world.not_unloadable": "Diese Welt ist nicht entfernbar",
   "pal.cmd.heal.healed_you": "Du wurdest geheilt",
   "pal.cmd.heal.single": "%s wurde geheilt",
   "pal.cmd.heal.multiple": "%s Lebewesen wurden geheilt",
@@ -29,5 +31,9 @@
   "pal.cmd.speed.fly.set.multiple": "Fluggeschwindigkeit von %s Spielern auf %.2f gesetzt",
   "pal.cmd.speed.all.reset.single": "Geschwindigkeit von %s zurückgesetzt",
   "pal.cmd.speed.all.reset.multiple": "Geschwindigkeit von %s Spielern zurückgesetzt",
+  "pal.cmd.world.teleport.single": "%s wurde nach %s teleportiert",
+  "pal.cmd.world.teleport.multiple": "%s Lebewesen wurden nach %s teleportiert",
+  "pal.cmd.world.create.success": "Created world %s with dimension type %s",
+  "pal.cmd.world.unload.success": "Unloaded world %s",
   "pal.teleporter.blocked": "Etwas blockiert den Weg..."
 }

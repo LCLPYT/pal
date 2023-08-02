@@ -9,11 +9,12 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import work.lclpnet.kibu.plugin.cmd.CommandRegistrar;
+import work.lclpnet.kibu.plugin.cmd.KibuCommand;
 import work.lclpnet.pal.service.FormattingService;
 
 import javax.inject.Inject;
 
-public class SayTextCommand implements PalCommand {
+public class SayTextCommand implements KibuCommand {
 
     private final FormattingService formattingService;
 

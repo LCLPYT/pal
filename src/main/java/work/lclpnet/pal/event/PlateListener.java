@@ -115,7 +115,7 @@ public class PlateListener implements HookListenerModule {
     }
 
     private void onMove(ServerPlayerEntity player, PositionRotation from, PositionRotation to) {
-        if (from.getY() >= to.getY() || !(player.getWorld() instanceof ServerWorld world)) return;  // no jump
+        if (!player.isOnGround() || from.getY() >= to.getY() || !(player.getWorld() instanceof ServerWorld world)) return;  // no jump
 
         BlockPos down = player.getBlockPos().down();
 

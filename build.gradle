@@ -24,6 +24,10 @@ repositories {
     maven {
         url "https://repo.lclpnet.work/repository/internal"
     }
+
+    maven {
+        url = 'https://maven.nucleoid.xyz/'
+    }
 }
 
 dependencies {
@@ -34,6 +38,7 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
     modImplementation "work.lclpnet.mods.kibu:kibu:${project.kibu_version}"
     modImplementation "work.lclpnet.mods.kibu:kibu-plugins:${project.kibu_plugins_version}"
+    modImplementation "xyz.nucleoid:fantasy:${project.fantasy_version}"
 
     /* other Java dependencies */
     implementation 'com.google.code.findbugs:jsr305:3.0.2'

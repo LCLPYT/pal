@@ -14,6 +14,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import work.lclpnet.kibu.plugin.cmd.CommandRegistrar;
+import work.lclpnet.kibu.plugin.cmd.KibuCommand;
 import work.lclpnet.kibu.translate.TranslationService;
 import work.lclpnet.kibu.translate.text.RootText;
 import work.lclpnet.pal.service.CommandService;
@@ -22,7 +23,7 @@ import javax.inject.Inject;
 
 import static work.lclpnet.kibu.translate.text.FormatWrapper.styled;
 
-public class ChestCommand implements PalCommand {
+public class ChestCommand implements KibuCommand {
 
     private static final Text containerName = Text.translatable("container.enderchest");
     private final CommandService commandService;

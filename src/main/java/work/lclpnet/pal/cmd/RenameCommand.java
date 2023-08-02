@@ -16,12 +16,13 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import work.lclpnet.kibu.plugin.cmd.CommandRegistrar;
+import work.lclpnet.kibu.plugin.cmd.KibuCommand;
 import work.lclpnet.pal.service.CommandService;
 import work.lclpnet.pal.service.FormattingService;
 
 import javax.inject.Inject;
 
-public class RenameCommand implements PalCommand {
+public class RenameCommand implements KibuCommand {
 
     private final CommandService commandService;
     private final FormattingService formattingService;

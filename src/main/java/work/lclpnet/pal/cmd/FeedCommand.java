@@ -10,6 +10,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Formatting;
 import work.lclpnet.kibu.plugin.cmd.CommandRegistrar;
+import work.lclpnet.kibu.plugin.cmd.KibuCommand;
 import work.lclpnet.kibu.translate.TranslationService;
 import work.lclpnet.kibu.translate.text.RootText;
 import work.lclpnet.pal.service.CommandService;
@@ -18,7 +19,7 @@ import javax.inject.Inject;
 
 import static work.lclpnet.kibu.translate.text.FormatWrapper.styled;
 
-public class FeedCommand implements PalCommand {
+public class FeedCommand implements KibuCommand {
 
     private final CommandService commandService;
 
