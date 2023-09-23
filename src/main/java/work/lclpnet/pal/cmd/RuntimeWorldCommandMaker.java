@@ -1,5 +1,6 @@
 package work.lclpnet.pal.cmd;
 
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -11,6 +12,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import net.minecraft.world.gen.GeneratorOptions;
 import work.lclpnet.kibu.translate.text.FormatWrapper;
 import work.lclpnet.kibu.world.KibuWorlds;
 import work.lclpnet.pal.cmd.arg.WorldSuggestionProvider;
@@ -19,6 +21,7 @@ import xyz.nucleoid.fantasy.Fantasy;
 import xyz.nucleoid.fantasy.RuntimeWorldConfig;
 import xyz.nucleoid.fantasy.RuntimeWorldHandle;
 
+import javax.annotation.Nullable;
 import java.util.function.Function;
 
 public class RuntimeWorldCommandMaker {
@@ -34,11 +37,15 @@ public class RuntimeWorldCommandMaker {
                         .requires(source -> source.hasPermissionLevel(4))
                         .then(CommandManager.literal("temporary")
                                 .then(CommandManager.argument("type", DimensionArgumentType.dimension())
-                                        .executes(this::createTemporaryWorld)))
+                                        .executes(this::createTemporaryWorld)
+                                        .then(CommandManager.argument("seed", StringArgumentType.greedyString())
+                                                .executes(this::createTemporaryWorldSeed))))
                         .then(CommandManager.literal("persistent")
                                 .then(CommandManager.argument("id", IdentifierArgumentType.identifier())
                                         .then(CommandManager.argument("type", DimensionArgumentType.dimension())
-                                                .executes(this::createPersistentWorld)))))
+                                                .executes(this::createPersistentWorld)
+                                                .then(CommandManager.argument("seed", StringArgumentType.greedyString())
+                                                        .executes(this::createPersistentWorldSeed))))))
                 .then(CommandManager.literal("unload")
                         .requires(source -> source.hasPermissionLevel(4))
                         .then(CommandManager.argument("world", IdentifierArgumentType.identifier())
@@ -53,15 +60,41 @@ public class RuntimeWorldCommandMaker {
     private int createTemporaryWorld(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         MinecraftServer server = ctx.getSource().getServer();
 
-        return createRuntimeWorld(ctx, worldConfig -> Fantasy.get(server).openTemporaryWorld(worldConfig));
+        return createRuntimeWorld(ctx, null, worldConfig -> Fantasy.get(server).openTemporaryWorld(worldConfig));
     }
 
-    private int createRuntimeWorld(CommandContext<ServerCommandSource> ctx, Function<RuntimeWorldConfig, RuntimeWorldHandle> factory) throws CommandSyntaxException {
+    private int createTemporaryWorldSeed(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
+        String seed = StringArgumentType.getString(ctx, "seed");
+        MinecraftServer server = ctx.getSource().getServer();
+
+        return createRuntimeWorld(ctx, seed, worldConfig -> Fantasy.get(server).openTemporaryWorld(worldConfig));
+    }
+
+    private int createPersistentWorld(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
+        Identifier id = IdentifierArgumentType.getIdentifier(ctx, "id");
+        MinecraftServer server = ctx.getSource().getServer();
+
+        return createRuntimeWorld(ctx, null, worldConfig -> Fantasy.get(server).getOrOpenPersistentWorld(id, worldConfig));
+    }
+
+    private int createPersistentWorldSeed(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
+        Identifier id = IdentifierArgumentType.getIdentifier(ctx, "id");
+        String seed = StringArgumentType.getString(ctx, "seed");
+        MinecraftServer server = ctx.getSource().getServer();
+
+        return createRuntimeWorld(ctx, seed, worldConfig -> Fantasy.get(server).getOrOpenPersistentWorld(id, worldConfig));
+    }
+
+    private int createRuntimeWorld(CommandContext<ServerCommandSource> ctx, @Nullable String seed, Function<RuntimeWorldConfig, RuntimeWorldHandle> factory) throws CommandSyntaxException {
         ServerWorld world = DimensionArgumentType.getDimensionArgument(ctx, "type");
 
         RuntimeWorldConfig worldConfig = new RuntimeWorldConfig()
                 .setDimensionType(world.getDimensionEntry())
                 .setGenerator(world.getChunkManager().getChunkGenerator());
+
+        if (seed != null) {
+            GeneratorOptions.parseSeed(seed).ifPresent(worldConfig::setSeed);
+        }
 
         RuntimeWorldHandle handle = factory.apply(worldConfig);
 
@@ -73,13 +106,6 @@ public class RuntimeWorldCommandMaker {
                 FormatWrapper.styled(world.getDimensionKey().getValue(), Formatting.YELLOW)).formatted(Formatting.GREEN));
 
         return 1;
-    }
-
-    private int createPersistentWorld(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        Identifier id = IdentifierArgumentType.getIdentifier(ctx, "id");
-        MinecraftServer server = ctx.getSource().getServer();
-
-        return createRuntimeWorld(ctx, worldConfig -> Fantasy.get(server).getOrOpenPersistentWorld(id, worldConfig));
     }
 
     private int unload(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
