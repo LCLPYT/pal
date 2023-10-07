@@ -21,21 +21,19 @@ import java.util.function.Predicate;
 
 public class WorldSuggestionProvider implements SuggestionProvider<ServerCommandSource> {
 
-    private final CommandService commandService;
     private final Predicate<ServerWorld> predicate;
 
-    public WorldSuggestionProvider(CommandService commandService) {
-        this(commandService, world -> true);
+    public WorldSuggestionProvider() {
+        this(world -> true);
     }
 
-    public WorldSuggestionProvider(CommandService commandService, Predicate<ServerWorld> predicate) {
-        this.commandService = commandService;
+    public WorldSuggestionProvider(Predicate<ServerWorld> predicate) {
         this.predicate = predicate;
     }
 
     @Override
     public CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder) {
-        MinecraftServer server = commandService.getServer();
+        MinecraftServer server = context.getSource().getServer();
         if (server == null) return builder.buildFuture();
 
         for (var key : server.getWorldRegistryKeys()) {
@@ -62,7 +60,7 @@ public class WorldSuggestionProvider implements SuggestionProvider<ServerCommand
         ServerWorld world = server.getWorld(key);
 
         if (world == null) {
-            throw commandService.createUnknownWorldTypeException(source, worldId);
+            throw commandService.createUnknownWorldException(source, worldId);
         }
 
         return world;

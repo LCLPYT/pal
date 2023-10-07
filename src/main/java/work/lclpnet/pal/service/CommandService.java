@@ -19,21 +19,30 @@ public class CommandService {
     private final TranslationService translationService;
     private final TranslatedCommandExceptionType
             requiresLivingException,
+            unknownWorldException,
             unknownWorldTypeException,
-            notUnloadableWorldException;
+            notUnloadableWorldException,
+            reservedWorldIdException;
     private MinecraftServer server = null;
 
     @Inject
     public CommandService(TranslationService translationService) {
         this.translationService = translationService;
         this.requiresLivingException = new TranslatedCommandExceptionType("pal.permissions.requires.living");
-        this.unknownWorldTypeException = new TranslatedCommandExceptionType("pal.errors.world.unknown");
+        this.unknownWorldException = new TranslatedCommandExceptionType("pal.errors.world.unknown");
+        this.unknownWorldTypeException = new TranslatedCommandExceptionType("pal.errors.world_type.unknown");
         this.notUnloadableWorldException = new TranslatedCommandExceptionType("pal.errors.world.not_unloadable");
+        this.reservedWorldIdException = new TranslatedCommandExceptionType("pal.errors.world_id.reserved");
     }
 
     @Nonnull
     public CommandSyntaxException createRequiresLivingException(ServerCommandSource source) {
         return requiresLivingException.create(key -> translateText(source, key));
+    }
+
+    @Nonnull
+    public CommandSyntaxException createUnknownWorldException(ServerCommandSource source, Identifier id) {
+        return unknownWorldException.create(key -> translateText(source, key, id));
     }
 
     @Nonnull
@@ -44,6 +53,11 @@ public class CommandService {
     @Nonnull
     public CommandSyntaxException createNotUnloadableWorldException(ServerCommandSource source) {
         return notUnloadableWorldException.create(key -> translateText(source, key));
+    }
+
+    @Nonnull
+    public CommandSyntaxException createReservedWorldIdException(ServerCommandSource source, Identifier id) {
+        return reservedWorldIdException.create(key -> translateText(source, key, id, id.getNamespace()));
     }
 
     public TranslationService getTranslationService() {

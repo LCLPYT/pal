@@ -45,7 +45,7 @@ public class WorldCommand implements KibuCommand {
                 .requires(source -> source.hasPermissionLevel(2))
                 .then(CommandManager.literal("tp")
                         .then(CommandManager.argument("world", IdentifierArgumentType.identifier())
-                                .suggests(new WorldSuggestionProvider(commandService))
+                                .suggests(new WorldSuggestionProvider())
                                 .executes(this::teleportSelf)
                                 .then(CommandManager.argument("entities", EntityArgumentType.entities())
                                         .executes(this::teleport))));
