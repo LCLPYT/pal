@@ -3,7 +3,7 @@
   "pal.errors.world.unknown": "Unbekannte Welt %s",
   "pal.errors.world_type.unknown": "Unbekannter Welttyp %s",
   "pal.errors.world.not_unloadable": "Diese Welt ist nicht entfernbar",
-  "pal.errors.world_id.reserved": "Ungültige Welt-ID \"%s\". Bitte wähle einen ID mit einem anderen Namensbereich als \"%s\".",
+  "pal.errors.world_id.reserved": "Ungültige Welt-ID \"%s\". Bitte wähle eine ID mit einem anderen Namensbereich als \"%s\".",
   "pal.cmd.heal.healed_you": "Du wurdest geheilt",
   "pal.cmd.heal.single": "%s wurde geheilt",
   "pal.cmd.heal.multiple": "%s Lebewesen wurden geheilt",
