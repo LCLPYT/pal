@@ -22,7 +22,8 @@ public class CommandService {
             unknownWorldException,
             unknownWorldTypeException,
             notUnloadableWorldException,
-            reservedWorldIdException;
+            reservedWorldIdException,
+            persistedWorldFailedToLoadException;
     private MinecraftServer server = null;
 
     @Inject
@@ -33,6 +34,7 @@ public class CommandService {
         this.unknownWorldTypeException = new TranslatedCommandExceptionType("pal.errors.world_type.unknown");
         this.notUnloadableWorldException = new TranslatedCommandExceptionType("pal.errors.world.not_unloadable");
         this.reservedWorldIdException = new TranslatedCommandExceptionType("pal.errors.world_id.reserved");
+        this.persistedWorldFailedToLoadException = new TranslatedCommandExceptionType("pal.errors.world_persistent.failed_to_load");
     }
 
     @Nonnull
@@ -58,6 +60,11 @@ public class CommandService {
     @Nonnull
     public CommandSyntaxException createReservedWorldIdException(ServerCommandSource source, Identifier id) {
         return reservedWorldIdException.create(key -> translateText(source, key, id, id.getNamespace()));
+    }
+
+    @Nonnull
+    public CommandSyntaxException createPersistedWorldFailedToLoadException(ServerCommandSource source, Identifier id) {
+        return persistedWorldFailedToLoadException.create(key -> translateText(source, key, id));
     }
 
     public TranslationService getTranslationService() {

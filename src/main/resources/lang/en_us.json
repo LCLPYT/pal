@@ -4,6 +4,7 @@
   "pal.errors.world_type.unknown": "Unknown world type %s",
   "pal.errors.world.not_unloadable": "That world is not unloadable",
   "pal.errors.world_id.reserved": "Invalid world id \"%s\". Please choose an id with a different namespace than \"%s\".",
+  "pal.errors.world_persistent.failed_to_load": "Failed to load persisted world \"%s\". Make sure it exists and that the level.dat is valid.",
   "pal.cmd.heal.healed_you": "You have been healed",
   "pal.cmd.heal.single": "Healed %s",
   "pal.cmd.heal.multiple": "Healed %s entities",
@@ -35,7 +36,9 @@
   "pal.cmd.speed.all.reset.multiple": "Reset speed of %s players",
   "pal.cmd.world.teleport.single": "Teleported %s to %s",
   "pal.cmd.world.teleport.multiple": "Teleported %s entities to %s",
-  "pal.cmd.world.create.success": "Created world %s with dimension type %s",
+  "pal.cmd.world.create.success": "Successfully created world %s. %s",
+  "pal.cmd.world.create.success.tp": "[teleport]",
+  "pal.cmd.world.create.success.tp_hover": "Click to teleport",
   "pal.cmd.world.unload.success": "Unloaded world %s",
   "pal.teleporter.blocked": "Something is blocking the way..."
 }

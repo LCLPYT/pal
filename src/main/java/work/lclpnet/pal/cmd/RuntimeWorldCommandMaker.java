@@ -9,12 +9,16 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.ClickEvent;
+import net.minecraft.text.HoverEvent;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.gen.GeneratorOptions;
 import work.lclpnet.kibu.translate.text.FormatWrapper;
 import work.lclpnet.kibu.world.KibuWorlds;
+import work.lclpnet.kibu.world.WorldManager;
 import work.lclpnet.pal.PalPlugin;
+import work.lclpnet.pal.cmd.arg.PersistentWorldSuggestionProvider;
 import work.lclpnet.pal.cmd.arg.WorldSuggestionProvider;
 import work.lclpnet.pal.cmd.arg.WorldTypeSuggestionProvider;
 import work.lclpnet.pal.service.CommandService;
@@ -59,11 +63,19 @@ public class RuntimeWorldCommandMaker {
                         .requires(source -> source.hasPermissionLevel(4))
                         .then(CommandManager.argument("world", IdentifierArgumentType.identifier())
                                 .suggests(new WorldSuggestionProvider(this::isRuntimeWorld))
-                                .executes(this::unload)));
+                                .executes(this::unload)))
+                .then(CommandManager.literal("load")
+                        .requires(source -> source.hasPermissionLevel(4))
+                        .then(CommandManager.argument("id", IdentifierArgumentType.identifier())
+                                .suggests(new PersistentWorldSuggestionProvider())
+                                .executes(this::loadPersistentWorld)));
     }
 
     private boolean isRuntimeWorld(ServerWorld world) {
-        return KibuWorlds.getInstance().getRuntimeWorldHandle(world).isPresent();
+        MinecraftServer server = world.getServer();
+        WorldManager worldManager = KibuWorlds.getInstance().getWorldManager(server);
+
+        return worldManager.getRuntimeWorldHandle(world).isPresent();
     }
 
     private int createTemporaryWorld(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
@@ -96,6 +108,26 @@ public class RuntimeWorldCommandMaker {
         validateIdentifier(ctx, id);
 
         return createRuntimeWorld(ctx, seed, worldConfig -> Fantasy.get(server).getOrOpenPersistentWorld(id, worldConfig));
+    }
+
+    private int loadPersistentWorld(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
+        Identifier id = IdentifierArgumentType.getIdentifier(ctx, "id");
+
+        validateIdentifier(ctx, id);
+
+        ServerCommandSource source = ctx.getSource();
+        MinecraftServer server = source.getServer();
+        WorldManager worldManager = KibuWorlds.getInstance().getWorldManager(server);
+
+        var optHandle = worldManager.openPersistentWorld(id);
+
+        if (optHandle.isEmpty()) {
+            throw commandService.createPersistedWorldFailedToLoadException(source, id);
+        }
+
+        sendCreationSuccess(id, source);
+
+        return 1;
     }
 
     private void validateIdentifier(CommandContext<ServerCommandSource> ctx, Identifier id) throws CommandSyntaxException {
@@ -131,19 +163,33 @@ public class RuntimeWorldCommandMaker {
         Identifier worldId = handle.getRegistryKey().getValue();
         ServerCommandSource source = ctx.getSource();
 
-        source.sendMessage(commandService.translateText(source, "pal.cmd.world.create.success",
-                FormatWrapper.styled(worldId, Formatting.YELLOW),
-                FormatWrapper.styled(worldType.getIdentifier(), Formatting.YELLOW)).formatted(Formatting.GREEN));
+        sendCreationSuccess(worldId, source);
 
         return 1;
+    }
+
+    private void sendCreationSuccess(Identifier worldId, ServerCommandSource source) {
+        ClickEvent clickEvent = new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/world tp %s".formatted(worldId));
+        HoverEvent hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT, commandService.translateText(source, "pal.cmd.world.create.success.tp_hover")
+                .formatted(Formatting.GREEN));
+
+        source.sendMessage(commandService.translateText(source, "pal.cmd.world.create.success",
+                        FormatWrapper.styled(worldId, Formatting.YELLOW),
+                        commandService.translateText(source, "pal.cmd.world.create.success.tp")
+                                .styled(style -> style.withClickEvent(clickEvent)
+                                        .withHoverEvent(hoverEvent))
+                                .formatted(Formatting.AQUA))
+                .formatted(Formatting.GREEN));
     }
 
     private int unload(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ServerWorld world = WorldSuggestionProvider.getWorld(context, "world", commandService);
 
         ServerCommandSource source = context.getSource();
+        MinecraftServer server = source.getServer();
 
-        var optHandle = KibuWorlds.getInstance().getRuntimeWorldHandle(world);
+        WorldManager worldManager = KibuWorlds.getInstance().getWorldManager(server);
+        var optHandle = worldManager.getRuntimeWorldHandle(world);
 
         if (optHandle.isEmpty()) {
             throw commandService.createNotUnloadableWorldException(source);
@@ -154,7 +200,7 @@ public class RuntimeWorldCommandMaker {
         Identifier id = world.getDimensionKey().getValue();
 
         source.sendMessage(commandService.translateText(source, "pal.cmd.world.unload.success",
-                FormatWrapper.styled(id)));
+                FormatWrapper.styled(id, Formatting.YELLOW)).formatted(Formatting.GREEN));
 
         return 1;
     }
