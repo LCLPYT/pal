@@ -197,7 +197,7 @@ public class RuntimeWorldCommandMaker {
 
         optHandle.get().unload();
 
-        Identifier id = world.getDimensionKey().getValue();
+        Identifier id = world.getRegistryKey().getValue();
 
         source.sendMessage(commandService.translateText(source, "pal.cmd.world.unload.success",
                 FormatWrapper.styled(id, Formatting.YELLOW)).formatted(Formatting.GREEN));
