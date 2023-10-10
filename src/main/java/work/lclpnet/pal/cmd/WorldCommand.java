@@ -23,7 +23,7 @@ import work.lclpnet.pal.service.CommandService;
 import work.lclpnet.pal.service.ReflectionService;
 
 import javax.inject.Inject;
-import java.lang.invoke.MethodHandle;
+import java.lang.reflect.Method;
 import java.util.Set;
 
 import static work.lclpnet.kibu.translate.text.FormatWrapper.styled;
@@ -83,7 +83,9 @@ public class WorldCommand implements KibuCommand {
         if (count == 1) {
             msg = commandService.translateText(source, "pal.cmd.world.teleport.single", styled(entities.iterator().next().getDisplayName().getString()).formatted(Formatting.YELLOW));
         } else {
-            msg = commandService.translateText(source, "pal.cmd.world.teleport.multiple", styled(count).formatted(Formatting.YELLOW));
+            msg = commandService.translateText(source, "pal.cmd.world.teleport.multiple",
+                    styled(count).formatted(Formatting.YELLOW),
+                    styled(world.getRegistryKey().getValue()).formatted(Formatting.YELLOW));
         }
 
         source.sendMessage(msg.formatted(Formatting.GREEN));
@@ -115,15 +117,15 @@ public class WorldCommand implements KibuCommand {
         BlockPos spawn = world.getSpawnPos();
 
         try {
-            MethodHandle handle = reflectionService.SpawnLocating$findOverworldSpawn();
+            Method method = reflectionService.SpawnLocating$findOverworldSpawn();
 
-            Object result = handle.invoke(world, spawn.getX(), spawn.getZ());
+            Object result = method.invoke(null, world, spawn.getX(), spawn.getZ());
 
             if (result instanceof BlockPos pos) {
                 return pos;
             }
         } catch (Throwable t) {
-            // failed to find Minecraft method handle
+            // failed to find Minecraft method, ignore it
         }
 
         return spawn;

@@ -8,9 +8,7 @@ import net.minecraft.util.math.BlockPos;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 
 @Singleton
@@ -18,12 +16,12 @@ public class ReflectionService {
 
     private final Object resolverMutex = new Object();
     private volatile MappingResolver mappingResolver;
-    private volatile MethodHandle SpawnLocating$findOverworldSpawn;
+    private volatile Method SpawnLocating$findOverworldSpawn;
 
     @Inject
     public ReflectionService() {}
 
-    public synchronized MethodHandle SpawnLocating$findOverworldSpawn() throws Throwable {
+    public synchronized Method SpawnLocating$findOverworldSpawn() throws Throwable {
         if (SpawnLocating$findOverworldSpawn != null) {
             return SpawnLocating$findOverworldSpawn;
         }
@@ -33,11 +31,10 @@ public class ReflectionService {
         String methodName = mappedMethod(SpawnLocating.class, "method_29194",
                 "(%sII)%s", ServerWorld.class, BlockPos.class);
 
-        MethodHandles.Lookup lookup = MethodHandles.lookup();  // looking for a protected method
+        Method method = cls.getDeclaredMethod(methodName, ServerWorld.class, int.class, int.class);
+        method.setAccessible(true);
 
-        MethodType type = MethodType.methodType(BlockPos.class, ServerWorld.class, int.class, int.class);
-
-        SpawnLocating$findOverworldSpawn = lookup.findStatic(cls, methodName, type);
+        SpawnLocating$findOverworldSpawn = method;
 
         return SpawnLocating$findOverworldSpawn;
     }
