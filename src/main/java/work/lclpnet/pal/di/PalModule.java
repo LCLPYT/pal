@@ -44,6 +44,12 @@ public class PalModule {
     }
 
     @Provides
+    @Named("imagesPath")
+    Path provideImagesPath(@Named("configPath") Path configPath) {
+        return configPath.resolveSibling("images");
+    }
+
+    @Provides
     ConfigAccess provideConfigAccess(ConfigManager configManager) {
         return configManager;
     }

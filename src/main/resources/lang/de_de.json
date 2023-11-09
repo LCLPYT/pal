@@ -5,6 +5,8 @@
   "pal.errors.world.not_unloadable": "Diese Welt ist nicht entfernbar",
   "pal.errors.world_id.reserved": "Ungültige Welt-ID \"%s\". Bitte wähle eine ID mit einem anderen Namensbereich als \"%s\".",
   "pal.errors.world_persistent.failed_to_load": "Gespeicherte Welt \"%s\" konnte nicht geladen werden. Gehe sicher, dass sie existiert und dass die level.dat gültig ist.",
+  "pal.errors.map_sizes_invalid": "Ungültige Eingabe. Erwartet wird \"<Breite>x<Höhe>\"",
+  "pal.errors.invalid_int": "Ungültige Eingabe \"%s\". Eine ganze Zahl wird erwartet",
   "pal.cmd.heal.healed_you": "Du wurdest geheilt",
   "pal.cmd.heal.single": "%s wurde geheilt",
   "pal.cmd.heal.multiple": "%s Lebewesen wurden geheilt",
@@ -40,5 +42,8 @@
   "pal.cmd.world.create.success.tp": "[Teleport]",
   "pal.cmd.world.create.success.tp_hover": "zum Teleportieren klicken",
   "pal.cmd.world.unload.success": "Welt %s wurde geschlossen",
+  "pal.cmd.imagemap.processing": "Bild wird verarbeitet...",
+  "pal.cmd.imagemap.not_found": "Fehler beim Laden des Bildes \"%s\"",
+  "pal.cmd.imagemap.error": "Fehler beim Generieren der Karte",
   "pal.teleporter.blocked": "Etwas blockiert den Weg..."
 }

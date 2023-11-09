@@ -54,6 +54,7 @@ dependencies {
     }
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testImplementation 'com.github.romankh3:image-comparison:4.4.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
     // if you need to test with Minecraft classes, use this too:
     // testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"

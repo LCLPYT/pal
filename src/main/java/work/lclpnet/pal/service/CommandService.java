@@ -23,7 +23,9 @@ public class CommandService {
             unknownWorldTypeException,
             notUnloadableWorldException,
             reservedWorldIdException,
-            persistedWorldFailedToLoadException;
+            persistedWorldFailedToLoadException,
+            invalidMapSizesException,
+            invalidIntException;
     private MinecraftServer server = null;
 
     @Inject
@@ -35,6 +37,8 @@ public class CommandService {
         this.notUnloadableWorldException = new TranslatedCommandExceptionType("pal.errors.world.not_unloadable");
         this.reservedWorldIdException = new TranslatedCommandExceptionType("pal.errors.world_id.reserved");
         this.persistedWorldFailedToLoadException = new TranslatedCommandExceptionType("pal.errors.world_persistent.failed_to_load");
+        this.invalidMapSizesException = new TranslatedCommandExceptionType("pal.errors.map_sizes_invalid");
+        this.invalidIntException = new TranslatedCommandExceptionType("pal.errors.invalid_int");
     }
 
     @Nonnull
@@ -65,6 +69,16 @@ public class CommandService {
     @Nonnull
     public CommandSyntaxException createPersistedWorldFailedToLoadException(ServerCommandSource source, Identifier id) {
         return persistedWorldFailedToLoadException.create(key -> translateText(source, key, id));
+    }
+
+    @Nonnull
+    public CommandSyntaxException createInvalidMapSizesException(ServerCommandSource source) {
+        return invalidMapSizesException.create(key -> translateText(source, key));
+    }
+
+    @Nonnull
+    public CommandSyntaxException createInvalidIntException(ServerCommandSource source, String input) {
+        return invalidIntException.create(key -> translateText(source, input));
     }
 
     public TranslationService getTranslationService() {

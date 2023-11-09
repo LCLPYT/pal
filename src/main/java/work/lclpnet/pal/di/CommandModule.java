@@ -44,4 +44,7 @@ public interface CommandModule {
 
     @Binds @IntoSet
     KibuCommand provideWorldCommand(WorldCommand cmd);
+
+    @Binds @IntoSet
+    KibuCommand provideImageMapCommand(ImageMapCommand cmd);
 }
