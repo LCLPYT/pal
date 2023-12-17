@@ -51,6 +51,9 @@ public class PalPlugin extends KibuPlugin implements TranslatedPlugin, WorldStat
     }
 
     private void onLoaded() {
+        PalApiImpl api = component.api();
+        PalApiImpl.setInstance(api);
+
         for (HookListenerModule hookModule : component.hooks()) {
             registerHooks(hookModule);
         }

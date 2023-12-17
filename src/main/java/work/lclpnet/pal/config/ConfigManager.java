@@ -26,6 +26,10 @@ public class ConfigManager implements ConfigAccess {
         return CompletableFuture.runAsync(handler::loadConfig);
     }
 
+    public CompletableFuture<Void> save() {
+        return CompletableFuture.runAsync(handler::writeConfig);
+    }
+
     @Override
     public PalConfig getConfig() {
         return handler.getConfig();

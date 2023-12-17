@@ -3,6 +3,7 @@ package work.lclpnet.pal.di;
 import dagger.Component;
 import work.lclpnet.kibu.plugin.cmd.KibuCommand;
 import work.lclpnet.kibu.plugin.hook.HookListenerModule;
+import work.lclpnet.pal.PalApiImpl;
 import work.lclpnet.pal.config.ConfigManager;
 import work.lclpnet.pal.service.CommandService;
 
@@ -24,4 +25,6 @@ public interface PalComponent {
     Set<HookListenerModule> hooks();
 
     CommandService commandService();
+
+    PalApiImpl api();
 }
