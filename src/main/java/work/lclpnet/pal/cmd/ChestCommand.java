@@ -63,7 +63,7 @@ public class ChestCommand implements KibuCommand {
         RootText text;
 
         if (player != target) {
-            text = translationService.translateText(player, "pal.cmd.chest.opened", styled(target.getEntityName()).formatted(Formatting.YELLOW));
+            text = translationService.translateText(player, "pal.cmd.chest.opened", styled(target.getNameForScoreboard()).formatted(Formatting.YELLOW));
         } else {
             text = translationService.translateText(player, "pal.cmd.chest.self");
         }

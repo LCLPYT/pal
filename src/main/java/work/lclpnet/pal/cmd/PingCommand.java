@@ -52,15 +52,17 @@ public class PingCommand implements KibuCommand {
         TranslationService translationService = commandService.getTranslationService();
         RootText text;
 
+        long latencyMs = target.networkHandler.getLatency();
+
         if (player == target) {
             text = translationService.translateText(player, "pal.cmd.ping.self",
-                    styled(target.pingMilliseconds).formatted(Formatting.YELLOW),
-                    styled(target.pingMilliseconds / 1000f).formatted(Formatting.YELLOW));
+                    styled(latencyMs).formatted(Formatting.YELLOW),
+                    styled(latencyMs / 1000f).formatted(Formatting.YELLOW));
         } else {
             text = translationService.translateText(player, "pal.cmd.ping.other",
-                    target.getEntityName(),
-                    styled(target.pingMilliseconds).formatted(Formatting.YELLOW),
-                    styled(target.pingMilliseconds / 1000f).formatted(Formatting.YELLOW));
+                    target.getNameForScoreboard(),
+                    styled(latencyMs).formatted(Formatting.YELLOW),
+                    styled(latencyMs / 1000f).formatted(Formatting.YELLOW));
         }
 
         player.sendMessage(text.formatted(Formatting.GREEN));

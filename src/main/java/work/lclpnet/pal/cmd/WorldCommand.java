@@ -81,7 +81,9 @@ public class WorldCommand implements KibuCommand {
         int count = entities.size();
 
         if (count == 1) {
-            msg = commandService.translateText(source, "pal.cmd.world.teleport.single", styled(entities.iterator().next().getDisplayName().getString()).formatted(Formatting.YELLOW));
+            msg = commandService.translateText(source, "pal.cmd.world.teleport.single",
+                    styled(entities.iterator().next().getNameForScoreboard()).formatted(Formatting.YELLOW),
+                    styled(world.getRegistryKey().getValue()).formatted(Formatting.YELLOW));
         } else {
             msg = commandService.translateText(source, "pal.cmd.world.teleport.multiple",
                     styled(count).formatted(Formatting.YELLOW),
@@ -107,7 +109,7 @@ public class WorldCommand implements KibuCommand {
         Identifier id = world.getRegistryKey().getValue();
 
         source.sendMessage(translationService.translateText(source, "pal.cmd.world.teleport.single",
-                styled(player.getEntityName(), Formatting.YELLOW),
+                styled(player.getNameForScoreboard(), Formatting.YELLOW),
                 styled(id, Formatting.YELLOW)).formatted(Formatting.GREEN));
 
         return 1;
