@@ -73,7 +73,7 @@ public class FeedCommand implements KibuCommand {
         int count = players.size();
 
         if (count == 1) {
-            msg = commandService.translateText(source, "pal.cmd.feed.single", styled(players.iterator().next().getDisplayName().getString()).formatted(Formatting.YELLOW));
+            msg = commandService.translateText(source, "pal.cmd.feed.single", styled(players.iterator().next().getNameForScoreboard()).formatted(Formatting.YELLOW));
         } else {
             msg = commandService.translateText(source, "pal.cmd.feed.multiple", styled(count).formatted(Formatting.YELLOW));
         }

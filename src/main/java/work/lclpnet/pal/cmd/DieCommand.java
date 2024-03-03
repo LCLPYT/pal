@@ -50,7 +50,7 @@ public class DieCommand implements KibuCommand {
 
         dieEntity(living);
 
-        RootText message = commandService.translateText(source, "pal.cmd.die.single", styled(living.getDisplayName().getString()).formatted(Formatting.YELLOW));
+        RootText message = commandService.translateText(source, "pal.cmd.die.single", styled(living.getNameForScoreboard()).formatted(Formatting.YELLOW));
         source.sendMessage(message.formatted(Formatting.GREEN));
 
         return 0;
@@ -79,7 +79,7 @@ public class DieCommand implements KibuCommand {
         int count = entities.size();
 
         if (count == 1) {
-            msg = commandService.translateText(source, "pal.cmd.die.single", styled(entities.get(0).getDisplayName().getString()).formatted(Formatting.YELLOW));
+            msg = commandService.translateText(source, "pal.cmd.die.single", styled(entities.get(0).getNameForScoreboard()).formatted(Formatting.YELLOW));
         } else {
             msg = commandService.translateText(source, "pal.cmd.die.multiple", styled(count).formatted(Formatting.YELLOW));
         }

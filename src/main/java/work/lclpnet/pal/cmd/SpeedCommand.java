@@ -123,7 +123,7 @@ public class SpeedCommand implements KibuCommand {
 
         if (count == 1) {
             msg = commandService.translateText(source, "pal.cmd.speed.%s.set.single".formatted(typeStr),
-                    styled(players.iterator().next().getDisplayName().getString()).formatted(Formatting.YELLOW),
+                    styled(players.iterator().next().getNameForScoreboard()).formatted(Formatting.YELLOW),
                     styled(value).formatted(Formatting.YELLOW));
         } else {
             msg = commandService.translateText(source, "pal.cmd.speed.%s.set.multiple".formatted(typeStr),
@@ -184,7 +184,7 @@ public class SpeedCommand implements KibuCommand {
 
             if (count == 1) {
                 msg = commandService.translateText(source, "pal.cmd.speed.all.reset.single",
-                        styled(players.iterator().next().getDisplayName().getString()).formatted(Formatting.YELLOW));
+                        styled(players.iterator().next().getNameForScoreboard()).formatted(Formatting.YELLOW));
             } else {
                 msg = commandService.translateText(source, "pal.cmd.speed.all.reset.multiple",
                         styled(count).formatted(Formatting.YELLOW));

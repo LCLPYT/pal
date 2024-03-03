@@ -89,7 +89,7 @@ public class HealCommand implements KibuCommand {
         int count = entities.size();
 
         if (count == 1) {
-            msg = commandService.translateText(source, "pal.cmd.heal.single", styled(entities.get(0).getDisplayName().getString()).formatted(Formatting.YELLOW));
+            msg = commandService.translateText(source, "pal.cmd.heal.single", styled(entities.get(0).getNameForScoreboard()).formatted(Formatting.YELLOW));
         } else {
             msg = commandService.translateText(source, "pal.cmd.heal.multiple", styled(count).formatted(Formatting.YELLOW));
         }
