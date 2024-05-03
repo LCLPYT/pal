@@ -5,7 +5,8 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.item.FilledMapItem;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.MapIdComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.map.MapState;
@@ -116,10 +117,9 @@ public class ImageMapCommand implements KibuCommand {
         for (BufferedImage part : parts) {
             ItemStack stack = new ItemStack(Items.FILLED_MAP);
 
-            int id = MapUtil.allocateMapId(world, 0, 0, 0, false, false, world.getRegistryKey());
-            String name = FilledMapItem.getMapName(id);
+            MapIdComponent id = MapUtil.allocateMapId(world, 0, 0, 0, false, false, world.getRegistryKey());
+            MapState mapState = world.getMapState(id);
 
-            MapState mapState = world.getMapState(name);
             if (mapState == null) throw new IllegalStateException();
 
             ((MapStateAccessor) mapState).setLocked(true);
@@ -127,7 +127,7 @@ public class ImageMapCommand implements KibuCommand {
             byte[] pixels = MapColorUtil.toBytes(part);
             System.arraycopy(pixels, 0, mapState.colors, 0, Math.min(pixels.length, mapState.colors.length));
 
-            MapUtil.setMapId(stack, id);
+            stack.set(DataComponentTypes.MAP_ID, id);
 
             player.giveItemStack(stack);
         }

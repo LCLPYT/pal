@@ -1,11 +1,11 @@
 package work.lclpnet.pal.cmd;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.command.argument.TextArgumentType;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
@@ -15,6 +15,7 @@ import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
+import work.lclpnet.kibu.cmd.type.CommandFactory;
 import work.lclpnet.kibu.plugin.cmd.CommandRegistrar;
 import work.lclpnet.kibu.plugin.cmd.KibuCommand;
 import work.lclpnet.pal.service.CommandService;
@@ -38,12 +39,12 @@ public class RenameCommand implements KibuCommand {
         registrar.registerCommand(command());
     }
 
-    private LiteralArgumentBuilder<ServerCommandSource> command() {
-        return CommandManager.literal("rename")
+    private CommandFactory<ServerCommandSource> command() {
+        return ctx -> CommandManager.literal("rename")
                 .requires(s -> s.hasPermissionLevel(2))
                 .then(CommandManager.argument("target", EntityArgumentType.player())
                         .then(CommandManager.literal("text")
-                                .then(CommandManager.argument("text", TextArgumentType.text())
+                                .then(CommandManager.argument("text", TextArgumentType.text(ctx.registryAccess()))
                                         .executes(this::renameText)))
                         .then(CommandManager.literal("string")
                                 .then(CommandManager.argument("string", StringArgumentType.greedyString())
@@ -77,7 +78,7 @@ public class RenameCommand implements KibuCommand {
             return 0;
         }
 
-        stack.setCustomName(name.copy().setStyle(name.getStyle().withParent(Style.EMPTY.withItalic(false))));
+        stack.set(DataComponentTypes.CUSTOM_NAME, name.copy().setStyle(name.getStyle().withParent(Style.EMPTY.withItalic(false))));
 
         MutableText msgName = name.copy().setStyle(name.getStyle().withParent(Style.EMPTY.withFormatting(Formatting.WHITE)));
         src.sendMessage(commandService.translateText(src, self ? "pal.cmd.rename.renamed.self" : "pal.cmd.rename.renamed", msgName).formatted(Formatting.GREEN));

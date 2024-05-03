@@ -12,6 +12,7 @@ import java.awt.image.BufferedImage;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,10 +29,10 @@ public class ImageManager {
 
     public CompletableFuture<ImageSource> getSource(String name) {
         try {
-            URL url = new URL(name);
+            URL url = URI.create(name).toURL();
 
             return CompletableFuture.completedFuture(url::openStream);
-        } catch (MalformedURLException ignored) {}
+        } catch (IllegalArgumentException | MalformedURLException ignored) {}
 
         return CompletableFuture.supplyAsync(() -> {
             Path path = directory.resolve(name);

@@ -1,13 +1,13 @@
 package work.lclpnet.pal.cmd;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.command.argument.TextArgumentType;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
+import work.lclpnet.kibu.cmd.type.CommandFactory;
 import work.lclpnet.kibu.plugin.cmd.CommandRegistrar;
 import work.lclpnet.kibu.plugin.cmd.KibuCommand;
 import work.lclpnet.pal.service.FormattingService;
@@ -28,11 +28,11 @@ public class SayTextCommand implements KibuCommand {
         registrar.registerCommand(command());
     }
 
-    private LiteralArgumentBuilder<ServerCommandSource> command() {
-        return CommandManager.literal("saytext")
+    private CommandFactory<ServerCommandSource> command() {
+        return ctx -> CommandManager.literal("saytext")
                 .requires(s -> s.hasPermissionLevel(2))
                 .then(CommandManager.literal("text")
-                        .then(CommandManager.argument("message", TextArgumentType.text())
+                        .then(CommandManager.argument("message", TextArgumentType.text(ctx.registryAccess()))
                                 .executes(this::sayText)))
                 .then(CommandManager.literal("string")
                         .then(CommandManager.argument("message", StringArgumentType.greedyString())

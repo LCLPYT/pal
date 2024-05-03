@@ -5,8 +5,8 @@ plugins {
     id 'fabric-loom' version '1.6-SNAPSHOT'
     id 'maven-publish'
     id 'gradle-build-utils' version '1.7.0'
-    id 'kibu-plugin-dev' version '0.13.0'
-    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'kibu-plugin-dev' version '0.14.0'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 Properties props = buildUtils.loadProperties('publish.properties')
@@ -26,6 +26,10 @@ repositories {
     }
 
     maven {
+        url "https://repo.lclpnet.work/repository/snapshots"
+    }
+
+    maven {
         url = 'https://maven.nucleoid.xyz/'
     }
 }
@@ -37,6 +41,7 @@ dependencies {
 
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
     modImplementation "work.lclpnet.mods.kibu:kibu:${project.kibu_version}"
+    modImplementation "work.lclpnet.mods.kibu:kibu-world-api:${project.kibu_world_api_version}"
     modImplementation "work.lclpnet.mods.kibu:kibu-plugins:${project.kibu_plugins_version}"
     modImplementation "xyz.nucleoid:fantasy:${project.fantasy_version}"
 
@@ -71,15 +76,15 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.release.set(17)
+    it.options.release.set(21)
 }
 
 java {
     // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
     withSourcesJar()
 
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 [jar, sourcesJar, shadowJar].each {
