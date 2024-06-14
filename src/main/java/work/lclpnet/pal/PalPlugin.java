@@ -86,6 +86,6 @@ public class PalPlugin extends KibuPlugin implements TranslatedPlugin, WorldStat
     }
 
     public static Identifier identifier(String path) {
-        return new Identifier(ID, path);
+        return Identifier.of(ID, path);
     }
 }

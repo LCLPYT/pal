@@ -35,7 +35,7 @@ public class PersistentWorldSuggestionProvider implements SuggestionProvider<Ser
                         String namespace = rel.getParent().getFileName().toString();
                         String name = rel.getFileName().toString();
 
-                        Identifier id = new Identifier(namespace, name);
+                        Identifier id = Identifier.of(namespace, name);
 
                         return id.toString();
                     }).forEach(builder::suggest);
