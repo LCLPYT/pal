@@ -17,7 +17,7 @@ import net.minecraft.world.gen.GeneratorOptions;
 import work.lclpnet.kibu.translate.text.FormatWrapper;
 import work.lclpnet.kibu.world.KibuWorlds;
 import work.lclpnet.kibu.world.WorldManager;
-import work.lclpnet.pal.PalPlugin;
+import work.lclpnet.pal.PalMod;
 import work.lclpnet.pal.cmd.arg.PersistentWorldSuggestionProvider;
 import work.lclpnet.pal.cmd.arg.WorldSuggestionProvider;
 import work.lclpnet.pal.cmd.arg.WorldTypeSuggestionProvider;
@@ -133,7 +133,7 @@ public class RuntimeWorldCommandMaker {
     private void validateIdentifier(CommandContext<ServerCommandSource> ctx, Identifier id) throws CommandSyntaxException {
         String namespace = id.getNamespace();
 
-        if (!PalPlugin.ID.equals(namespace)) return;
+        if (!PalMod.ID.equals(namespace)) return;
 
         throw commandService.createReservedWorldIdException(ctx.getSource(), id);
     }

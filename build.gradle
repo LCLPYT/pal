@@ -5,8 +5,6 @@ plugins {
     id 'fabric-loom' version '1.6-SNAPSHOT'
     id 'maven-publish'
     id 'gradle-build-utils' version '1.7.0'
-    id 'kibu-plugin-dev' version '0.14.0'
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 Properties props = buildUtils.loadProperties('publish.properties')
@@ -53,10 +51,7 @@ dependencies {
     annotationProcessor 'com.google.dagger:dagger-compiler:2.46.1'
 
     // bundle these dependencies
-    'work.lclpnet:json-config4j:1.0.0'.with {
-        implementation it
-        bundle it
-    }
+    include(implementation('work.lclpnet:json-config4j:1.0.0'))
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testImplementation 'com.github.romankh3:image-comparison:4.4.0'
@@ -70,7 +65,7 @@ test {
 processResources {
     inputs.property "version", project.version
 
-    filesMatching("plugin.json") {
+    filesMatching("fabric.mod.json") {
         expand "version": project.version
     }
 }
@@ -87,20 +82,16 @@ java {
     targetCompatibility = JavaVersion.VERSION_21
 }
 
-[jar, sourcesJar, shadowJar].each {
+[jar, sourcesJar].each {
     it.from("LICENSE") {
         rename { "${it}_${project.archivesBaseName}" }
     }
 }
 
-shadowJar {
-    mergeServiceFiles()
-}
-
 def env = System.getenv()
 
 tasks.register("github", GithubDeploymentTask) {
-    dependsOn tasks.remapShadowJar
+    dependsOn tasks.remapJar
 
     config {
         token = env.get("GITHUB_TOKEN")
@@ -112,7 +103,7 @@ tasks.register("github", GithubDeploymentTask) {
         tag = buildUtils.latestTag()
     }
 
-    assets.add(tasks.remapShadowJar.archiveFile.get())
+    assets.add(tasks.remapJar.archiveFile.get())
 }
 
 publishing {
@@ -120,7 +111,7 @@ publishing {
         mavenJava(MavenPublication) {
             artifactId = project.archives_base_name
 
-            from components.kibu
+            from components.java
 
             pom {
                 name = 'Pal'

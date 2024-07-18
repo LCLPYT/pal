@@ -9,7 +9,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeKeys;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
-import work.lclpnet.pal.PalPlugin;
+import work.lclpnet.pal.PalMod;
 import work.lclpnet.pal.world.WorldCreationContext;
 import work.lclpnet.pal.world.WorldType;
 import xyz.nucleoid.fantasy.RuntimeWorldConfig;
@@ -19,7 +19,7 @@ public class VoidWorldType implements WorldType {
 
     @Override
     public Identifier getIdentifier() {
-        return PalPlugin.identifier("void");
+        return PalMod.identifier("void");
     }
 
     @Override
