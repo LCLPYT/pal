@@ -3,7 +3,7 @@ package work.lclpnet.pal.di;
 import dagger.Binds;
 import dagger.Module;
 import dagger.multibindings.IntoSet;
-import work.lclpnet.kibu.plugin.hook.HookListenerModule;
+import work.lclpnet.kibu.hook.HookListenerModule;
 import work.lclpnet.pal.event.PlateListener;
 
 /**

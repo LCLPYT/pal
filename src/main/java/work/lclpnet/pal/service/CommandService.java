@@ -5,11 +5,11 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.NotNull;
 import work.lclpnet.kibu.translate.TranslationService;
 import work.lclpnet.kibu.translate.text.RootText;
 import work.lclpnet.pal.cmd.TranslatedCommandExceptionType;
 
-import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -41,42 +41,42 @@ public class CommandService {
         this.invalidIntException = new TranslatedCommandExceptionType("pal.errors.invalid_int");
     }
 
-    @Nonnull
+    @NotNull
     public CommandSyntaxException createRequiresLivingException(ServerCommandSource source) {
         return requiresLivingException.create(key -> translateText(source, key));
     }
 
-    @Nonnull
+    @NotNull
     public CommandSyntaxException createUnknownWorldException(ServerCommandSource source, Identifier id) {
         return unknownWorldException.create(key -> translateText(source, key, id));
     }
 
-    @Nonnull
+    @NotNull
     public CommandSyntaxException createUnknownWorldTypeException(ServerCommandSource source, Identifier id) {
         return unknownWorldTypeException.create(key -> translateText(source, key, id));
     }
 
-    @Nonnull
+    @NotNull
     public CommandSyntaxException createNotUnloadableWorldException(ServerCommandSource source) {
         return notUnloadableWorldException.create(key -> translateText(source, key));
     }
 
-    @Nonnull
+    @NotNull
     public CommandSyntaxException createReservedWorldIdException(ServerCommandSource source, Identifier id) {
         return reservedWorldIdException.create(key -> translateText(source, key, id, id.getNamespace()));
     }
 
-    @Nonnull
+    @NotNull
     public CommandSyntaxException createPersistedWorldFailedToLoadException(ServerCommandSource source, Identifier id) {
         return persistedWorldFailedToLoadException.create(key -> translateText(source, key, id));
     }
 
-    @Nonnull
+    @NotNull
     public CommandSyntaxException createInvalidMapSizesException(ServerCommandSource source) {
         return invalidMapSizesException.create(key -> translateText(source, key));
     }
 
-    @Nonnull
+    @NotNull
     public CommandSyntaxException createInvalidIntException(ServerCommandSource source, String input) {
         return invalidIntException.create(key -> translateText(source, input));
     }

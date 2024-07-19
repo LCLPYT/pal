@@ -3,7 +3,7 @@ package work.lclpnet.pal.di;
 import dagger.Binds;
 import dagger.Module;
 import dagger.multibindings.IntoSet;
-import work.lclpnet.kibu.plugin.cmd.KibuCommand;
+import work.lclpnet.kibu.cmd.type.KibuCommand;
 import work.lclpnet.pal.cmd.*;
 
 /**

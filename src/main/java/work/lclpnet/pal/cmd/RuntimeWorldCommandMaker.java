@@ -14,6 +14,7 @@ import net.minecraft.text.HoverEvent;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.gen.GeneratorOptions;
+import org.jetbrains.annotations.Nullable;
 import work.lclpnet.kibu.translate.text.FormatWrapper;
 import work.lclpnet.kibu.world.KibuWorlds;
 import work.lclpnet.kibu.world.WorldManager;
@@ -28,7 +29,6 @@ import xyz.nucleoid.fantasy.Fantasy;
 import xyz.nucleoid.fantasy.RuntimeWorldConfig;
 import xyz.nucleoid.fantasy.RuntimeWorldHandle;
 
-import javax.annotation.Nullable;
 import java.util.Random;
 import java.util.function.Function;
 
