@@ -114,7 +114,7 @@ publishing {
 
             pom {
                 name = 'Pal'
-                description = 'A kibu plugin for Fabric that adds essential functionally for minigame servers'
+                description = 'Simple Fabric mod to provide essential utilities for Minecraft servers.'
             }
         }
     }

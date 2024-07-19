@@ -38,7 +38,7 @@ public class PalMod implements ModInitializer {
                 loadingTranslations.whenLoaded()
         ).whenComplete((nil, err) -> {
             if (err != null) {
-                logger.error("Failed to initialize plugin 'pal'", err);
+                logger.error("Failed to initialize pal", err);
                 return;
             }
 
