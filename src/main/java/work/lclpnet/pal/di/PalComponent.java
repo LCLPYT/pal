@@ -1,8 +1,8 @@
 package work.lclpnet.pal.di;
 
 import dagger.Component;
-import work.lclpnet.kibu.plugin.cmd.KibuCommand;
-import work.lclpnet.kibu.plugin.hook.HookListenerModule;
+import work.lclpnet.kibu.cmd.type.KibuCommand;
+import work.lclpnet.kibu.hook.HookListenerModule;
 import work.lclpnet.pal.PalApiImpl;
 import work.lclpnet.pal.config.ConfigManager;
 import work.lclpnet.pal.service.CommandService;

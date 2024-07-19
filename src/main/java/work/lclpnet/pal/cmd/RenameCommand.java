@@ -16,8 +16,8 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import work.lclpnet.kibu.cmd.type.CommandFactory;
-import work.lclpnet.kibu.plugin.cmd.CommandRegistrar;
-import work.lclpnet.kibu.plugin.cmd.KibuCommand;
+import work.lclpnet.kibu.cmd.type.CommandRegistrar;
+import work.lclpnet.kibu.cmd.type.KibuCommand;
 import work.lclpnet.pal.service.CommandService;
 import work.lclpnet.pal.service.FormattingService;
 

@@ -13,9 +13,9 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 import work.lclpnet.pal.service.CommandService;
 
-import javax.annotation.Nonnull;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
@@ -48,7 +48,7 @@ public class WorldSuggestionProvider implements SuggestionProvider<ServerCommand
         return builder.buildFuture();
     }
 
-    @Nonnull
+    @NotNull
     public static ServerWorld getWorld(CommandContext<ServerCommandSource> ctx, String name, CommandService commandService) throws CommandSyntaxException {
         Identifier worldId = IdentifierArgumentType.getIdentifier(ctx, name);
 

@@ -2,11 +2,9 @@ import work.lclpnet.build.task.GithubDeploymentTask
 
 plugins {
     id 'java'
-    id 'fabric-loom' version '1.6-SNAPSHOT'
+    id 'fabric-loom' version '1.7-SNAPSHOT'
     id 'maven-publish'
     id 'gradle-build-utils' version '1.7.0'
-    id 'kibu-plugin-dev' version '0.14.0'
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 Properties props = buildUtils.loadProperties('publish.properties')
@@ -42,21 +40,17 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
     modImplementation "work.lclpnet.mods.kibu:kibu:${project.kibu_version}"
     modImplementation "work.lclpnet.mods.kibu:kibu-world-api:${project.kibu_world_api_version}"
-    modImplementation "work.lclpnet.mods.kibu:kibu-plugins:${project.kibu_plugins_version}"
     modImplementation "xyz.nucleoid:fantasy:${project.fantasy_version}"
 
     /* other Java dependencies */
-    implementation 'com.google.code.findbugs:jsr305:3.0.2'
+    compileOnly 'org.jetbrains:annotations:24.1.0'
     implementation 'org.json:json:20231013'
 
     implementation 'com.google.dagger:dagger:2.46.1'
     annotationProcessor 'com.google.dagger:dagger-compiler:2.46.1'
 
     // bundle these dependencies
-    'work.lclpnet:json-config4j:1.0.0'.with {
-        implementation it
-        bundle it
-    }
+    include(implementation('work.lclpnet:json-config4j:1.0.0'))
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testImplementation 'com.github.romankh3:image-comparison:4.4.0'
@@ -70,7 +64,7 @@ test {
 processResources {
     inputs.property "version", project.version
 
-    filesMatching("plugin.json") {
+    filesMatching("fabric.mod.json") {
         expand "version": project.version
     }
 }
@@ -87,20 +81,16 @@ java {
     targetCompatibility = JavaVersion.VERSION_21
 }
 
-[jar, sourcesJar, shadowJar].each {
+[jar, sourcesJar].each {
     it.from("LICENSE") {
         rename { "${it}_${project.archivesBaseName}" }
     }
 }
 
-shadowJar {
-    mergeServiceFiles()
-}
-
 def env = System.getenv()
 
 tasks.register("github", GithubDeploymentTask) {
-    dependsOn tasks.remapShadowJar
+    dependsOn tasks.remapJar
 
     config {
         token = env.get("GITHUB_TOKEN")
@@ -112,7 +102,7 @@ tasks.register("github", GithubDeploymentTask) {
         tag = buildUtils.latestTag()
     }
 
-    assets.add(tasks.remapShadowJar.archiveFile.get())
+    assets.add(tasks.remapJar.archiveFile.get())
 }
 
 publishing {
@@ -120,11 +110,11 @@ publishing {
         mavenJava(MavenPublication) {
             artifactId = project.archives_base_name
 
-            from components.kibu
+            from components.java
 
             pom {
                 name = 'Pal'
-                description = 'A kibu plugin for Fabric that adds essential functionally for minigame servers'
+                description = 'Simple Fabric mod to provide essential utilities for Minecraft servers.'
             }
         }
     }

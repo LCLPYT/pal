@@ -6,7 +6,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import org.slf4j.Logger;
 import work.lclpnet.kibu.scheduler.api.Scheduler;
 import work.lclpnet.kibu.translate.TranslationService;
-import work.lclpnet.pal.PalPlugin;
+import work.lclpnet.pal.PalMod;
 import work.lclpnet.pal.config.ConfigAccess;
 import work.lclpnet.pal.config.ConfigManager;
 import work.lclpnet.pal.config.PalConfig;
@@ -40,7 +40,7 @@ public class PalModule {
     @Provides
     @Named("configPath")
     Path provideConfigPath() {
-        return FabricLoader.getInstance().getConfigDir().resolve(PalPlugin.ID).resolve("config.json");
+        return FabricLoader.getInstance().getConfigDir().resolve(PalMod.ID).resolve("config.json");
     }
 
     @Provides
