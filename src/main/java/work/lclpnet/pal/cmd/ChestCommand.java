@@ -15,7 +15,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import work.lclpnet.kibu.cmd.type.CommandRegistrar;
 import work.lclpnet.kibu.cmd.type.KibuCommand;
-import work.lclpnet.kibu.translate.TranslationService;
+import work.lclpnet.kibu.translate.Translations;
 import work.lclpnet.kibu.translate.text.RootText;
 import work.lclpnet.pal.service.CommandService;
 
@@ -59,13 +59,13 @@ public class ChestCommand implements KibuCommand {
         ScreenHandlerFactory baseFactory = (syncId, inventory, p) -> GenericContainerScreenHandler.createGeneric9x3(syncId, inventory, chestInventory);
         player.openHandledScreen(new SimpleNamedScreenHandlerFactory(baseFactory, containerName));
 
-        TranslationService translationService = commandService.getTranslationService();
+        Translations Translations = commandService.getTranslations();
         RootText text;
 
         if (player != target) {
-            text = translationService.translateText(player, "pal.cmd.chest.opened", styled(target.getNameForScoreboard()).formatted(Formatting.YELLOW));
+            text = Translations.translateText(player, "pal.cmd.chest.opened", styled(target.getNameForScoreboard()).formatted(Formatting.YELLOW));
         } else {
-            text = translationService.translateText(player, "pal.cmd.chest.self");
+            text = Translations.translateText(player, "pal.cmd.chest.self");
         }
 
         player.sendMessage(text.formatted(Formatting.GREEN));

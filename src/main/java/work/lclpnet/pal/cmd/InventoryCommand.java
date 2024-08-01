@@ -15,7 +15,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Formatting;
 import work.lclpnet.kibu.cmd.type.CommandRegistrar;
 import work.lclpnet.kibu.cmd.type.KibuCommand;
-import work.lclpnet.kibu.translate.TranslationService;
+import work.lclpnet.kibu.translate.Translations;
 import work.lclpnet.kibu.translate.text.RootText;
 import work.lclpnet.pal.service.CommandService;
 
@@ -58,17 +58,17 @@ public class InventoryCommand implements KibuCommand {
         PlayerInventory inv = target.getInventory();
         ScreenHandlerFactory baseFactory = (syncId, inventory, p) -> new GenericContainerScreenHandler(ScreenHandlerType.GENERIC_9X4, syncId, inventory, inv, 4);
 
-        TranslationService translationService = commandService.getTranslationService();
-        RootText title = translationService.translateText(player, "pal.cmd.inv.title", target.getNameForScoreboard());
+        Translations Translations = commandService.getTranslations();
+        RootText title = Translations.translateText(player, "pal.cmd.inv.title", target.getNameForScoreboard());
 
         player.openHandledScreen(new SimpleNamedScreenHandlerFactory(baseFactory, title));
 
         RootText text;
 
         if (player != target) {
-            text = translationService.translateText(player, "pal.cmd.inv.opened", styled(target.getNameForScoreboard()).formatted(Formatting.YELLOW));
+            text = Translations.translateText(player, "pal.cmd.inv.opened", styled(target.getNameForScoreboard()).formatted(Formatting.YELLOW));
         } else {
-            text = translationService.translateText(player, "pal.cmd.inv.self");
+            text = Translations.translateText(player, "pal.cmd.inv.self");
         }
 
         player.sendMessage(text.formatted(Formatting.GREEN));

@@ -12,7 +12,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import work.lclpnet.kibu.cmd.type.CommandRegistrar;
 import work.lclpnet.kibu.cmd.type.KibuCommand;
-import work.lclpnet.kibu.translate.TranslationService;
+import work.lclpnet.kibu.translate.Translations;
 import work.lclpnet.kibu.translate.text.RootText;
 import work.lclpnet.pal.service.CommandService;
 
@@ -62,13 +62,13 @@ public class FlyCommand implements KibuCommand {
 
         player.sendAbilitiesUpdate();
 
-        TranslationService translationService = commandService.getTranslationService();
+        Translations Translations = commandService.getTranslations();
         Text text;
 
         if (abilities.allowFlying) {
-            text = translationService.translateText(player, "pal.cmd.fly.enabled").formatted(Formatting.GREEN);
+            text = Translations.translateText(player, "pal.cmd.fly.enabled").formatted(Formatting.GREEN);
         } else {
-            text = translationService.translateText(player, "pal.cmd.fly.disabled").formatted(Formatting.RED);
+            text = Translations.translateText(player, "pal.cmd.fly.disabled").formatted(Formatting.RED);
         }
 
         player.sendMessage(text);

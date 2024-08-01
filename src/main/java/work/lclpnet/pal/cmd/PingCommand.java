@@ -10,7 +10,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Formatting;
 import work.lclpnet.kibu.cmd.type.CommandRegistrar;
 import work.lclpnet.kibu.cmd.type.KibuCommand;
-import work.lclpnet.kibu.translate.TranslationService;
+import work.lclpnet.kibu.translate.Translations;
 import work.lclpnet.kibu.translate.text.RootText;
 import work.lclpnet.pal.service.CommandService;
 
@@ -49,17 +49,17 @@ public class PingCommand implements KibuCommand {
     }
 
     private void sendPingOf(ServerPlayerEntity player, ServerPlayerEntity target) {
-        TranslationService translationService = commandService.getTranslationService();
+        Translations Translations = commandService.getTranslations();
         RootText text;
 
         long latencyMs = target.networkHandler.getLatency();
 
         if (player == target) {
-            text = translationService.translateText(player, "pal.cmd.ping.self",
+            text = Translations.translateText(player, "pal.cmd.ping.self",
                     styled(latencyMs).formatted(Formatting.YELLOW),
                     styled(latencyMs / 1000f).formatted(Formatting.YELLOW));
         } else {
-            text = translationService.translateText(player, "pal.cmd.ping.other",
+            text = Translations.translateText(player, "pal.cmd.ping.other",
                     target.getNameForScoreboard(),
                     styled(latencyMs).formatted(Formatting.YELLOW),
                     styled(latencyMs / 1000f).formatted(Formatting.YELLOW));

@@ -6,7 +6,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
-import work.lclpnet.kibu.translate.TranslationService;
+import work.lclpnet.kibu.translate.Translations;
 import work.lclpnet.kibu.translate.text.RootText;
 import work.lclpnet.pal.cmd.TranslatedCommandExceptionType;
 
@@ -16,7 +16,7 @@ import javax.inject.Singleton;
 @Singleton
 public class CommandService {
 
-    private final TranslationService translationService;
+    private final Translations Translations;
     private final TranslatedCommandExceptionType
             requiresLivingException,
             unknownWorldException,
@@ -29,8 +29,8 @@ public class CommandService {
     private MinecraftServer server = null;
 
     @Inject
-    public CommandService(TranslationService translationService) {
-        this.translationService = translationService;
+    public CommandService(Translations Translations) {
+        this.Translations = Translations;
         this.requiresLivingException = new TranslatedCommandExceptionType("pal.permissions.requires.living");
         this.unknownWorldException = new TranslatedCommandExceptionType("pal.errors.world.unknown");
         this.unknownWorldTypeException = new TranslatedCommandExceptionType("pal.errors.world_type.unknown");
@@ -81,18 +81,18 @@ public class CommandService {
         return invalidIntException.create(key -> translateText(source, input));
     }
 
-    public TranslationService getTranslationService() {
-        return translationService;
+    public Translations getTranslations() {
+        return Translations;
     }
 
     public RootText translateText(ServerCommandSource source, String key, Object... arguments) {
         ServerPlayerEntity player = source.getPlayer();
 
         if (player != null) {
-            return translationService.translateText(player, key, arguments);
+            return Translations.translateText(player, key, arguments);
         }
 
-        return translationService.translateText("en_us", key, arguments);
+        return Translations.translateText("en_us", key, arguments);
     }
 
     public void setServer(MinecraftServer server) {

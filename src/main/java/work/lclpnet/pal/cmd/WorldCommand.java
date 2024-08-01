@@ -16,7 +16,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import work.lclpnet.kibu.cmd.type.CommandRegistrar;
 import work.lclpnet.kibu.cmd.type.KibuCommand;
-import work.lclpnet.kibu.translate.TranslationService;
+import work.lclpnet.kibu.translate.Translations;
 import work.lclpnet.kibu.translate.text.RootText;
 import work.lclpnet.pal.cmd.arg.WorldSuggestionProvider;
 import work.lclpnet.pal.service.CommandService;
@@ -105,10 +105,10 @@ public class WorldCommand implements KibuCommand {
 
         teleportEntity(player, world, pos);
 
-        TranslationService translationService = commandService.getTranslationService();
+        Translations Translations = commandService.getTranslations();
         Identifier id = world.getRegistryKey().getValue();
 
-        source.sendMessage(translationService.translateText(source, "pal.cmd.world.teleport.single",
+        source.sendMessage(Translations.translateText(source, "pal.cmd.world.teleport.single",
                 styled(player.getNameForScoreboard(), Formatting.YELLOW),
                 styled(id, Formatting.YELLOW)).formatted(Formatting.GREEN));
 
