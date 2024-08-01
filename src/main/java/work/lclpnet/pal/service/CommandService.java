@@ -16,7 +16,7 @@ import javax.inject.Singleton;
 @Singleton
 public class CommandService {
 
-    private final Translations Translations;
+    private final Translations translations;
     private final TranslatedCommandExceptionType
             requiresLivingException,
             unknownWorldException,
@@ -29,8 +29,8 @@ public class CommandService {
     private MinecraftServer server = null;
 
     @Inject
-    public CommandService(Translations Translations) {
-        this.Translations = Translations;
+    public CommandService(Translations translations) {
+        this.translations = translations;
         this.requiresLivingException = new TranslatedCommandExceptionType("pal.permissions.requires.living");
         this.unknownWorldException = new TranslatedCommandExceptionType("pal.errors.world.unknown");
         this.unknownWorldTypeException = new TranslatedCommandExceptionType("pal.errors.world_type.unknown");
@@ -82,17 +82,17 @@ public class CommandService {
     }
 
     public Translations getTranslations() {
-        return Translations;
+        return translations;
     }
 
     public RootText translateText(ServerCommandSource source, String key, Object... arguments) {
         ServerPlayerEntity player = source.getPlayer();
 
         if (player != null) {
-            return Translations.translateText(player, key, arguments);
+            return translations.translateText(player, key, arguments);
         }
 
-        return Translations.translateText("en_us", key, arguments);
+        return translations.translateText("en_us", key, arguments);
     }
 
     public void setServer(MinecraftServer server) {

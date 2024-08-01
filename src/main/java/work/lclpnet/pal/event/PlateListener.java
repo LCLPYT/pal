@@ -50,13 +50,13 @@ public class PlateListener implements HookListenerModule {
     private final Scheduler scheduler;
     private final WeakHashMap<Entity, Void> noFall = new WeakHashMap<>();
     private final Set<UUID> padCooldown = new HashSet<>(), teleporterCooldown = new HashSet<>();
-    private final Translations Translations;
+    private final Translations translations;
 
     @Inject
-    public PlateListener(PalConfig config, Scheduler scheduler, Translations Translations) {
+    public PlateListener(PalConfig config, Scheduler scheduler, Translations translations) {
         this.config = config;
         this.scheduler = scheduler;
-        this.Translations = Translations;
+        this.translations = translations;
     }
 
     @Override
@@ -293,7 +293,7 @@ public class PlateListener implements HookListenerModule {
 
     private void useTeleporter(ServerPlayerEntity player, ServerWorld world, BlockPos target) {
         if (!hasSpaceOn(world, player, target)) {
-            player.sendMessage(Translations.translateText(player, "pal.teleporter.blocked").formatted(Formatting.RED));
+            player.sendMessage(translations.translateText(player, "pal.teleporter.blocked").formatted(Formatting.RED));
             return;
         }
 

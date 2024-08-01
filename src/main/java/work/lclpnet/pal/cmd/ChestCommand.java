@@ -59,13 +59,13 @@ public class ChestCommand implements KibuCommand {
         ScreenHandlerFactory baseFactory = (syncId, inventory, p) -> GenericContainerScreenHandler.createGeneric9x3(syncId, inventory, chestInventory);
         player.openHandledScreen(new SimpleNamedScreenHandlerFactory(baseFactory, containerName));
 
-        Translations Translations = commandService.getTranslations();
+        Translations translations = commandService.getTranslations();
         RootText text;
 
         if (player != target) {
-            text = Translations.translateText(player, "pal.cmd.chest.opened", styled(target.getNameForScoreboard()).formatted(Formatting.YELLOW));
+            text = translations.translateText(player, "pal.cmd.chest.opened", styled(target.getNameForScoreboard()).formatted(Formatting.YELLOW));
         } else {
-            text = Translations.translateText(player, "pal.cmd.chest.self");
+            text = translations.translateText(player, "pal.cmd.chest.self");
         }
 
         player.sendMessage(text.formatted(Formatting.GREEN));

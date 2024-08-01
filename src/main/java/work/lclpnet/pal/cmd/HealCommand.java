@@ -66,8 +66,8 @@ public class HealCommand implements KibuCommand {
         hungerManager.setFoodLevel(20);
         hungerManager.setSaturationLevel(5f);
 
-        Translations Translations = commandService.getTranslations();
-        player.sendMessage(Translations.translateText(player, "pal.cmd.heal.healed_you").formatted(Formatting.GREEN));
+        Translations translations = commandService.getTranslations();
+        player.sendMessage(translations.translateText(player, "pal.cmd.heal.healed_you").formatted(Formatting.GREEN));
     }
 
     private int heal(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {

@@ -62,13 +62,13 @@ public class FlyCommand implements KibuCommand {
 
         player.sendAbilitiesUpdate();
 
-        Translations Translations = commandService.getTranslations();
+        Translations translations = commandService.getTranslations();
         Text text;
 
         if (abilities.allowFlying) {
-            text = Translations.translateText(player, "pal.cmd.fly.enabled").formatted(Formatting.GREEN);
+            text = translations.translateText(player, "pal.cmd.fly.enabled").formatted(Formatting.GREEN);
         } else {
-            text = Translations.translateText(player, "pal.cmd.fly.disabled").formatted(Formatting.RED);
+            text = translations.translateText(player, "pal.cmd.fly.disabled").formatted(Formatting.RED);
         }
 
         player.sendMessage(text);

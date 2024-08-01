@@ -49,17 +49,17 @@ public class PingCommand implements KibuCommand {
     }
 
     private void sendPingOf(ServerPlayerEntity player, ServerPlayerEntity target) {
-        Translations Translations = commandService.getTranslations();
+        Translations translations = commandService.getTranslations();
         RootText text;
 
         long latencyMs = target.networkHandler.getLatency();
 
         if (player == target) {
-            text = Translations.translateText(player, "pal.cmd.ping.self",
+            text = translations.translateText(player, "pal.cmd.ping.self",
                     styled(latencyMs).formatted(Formatting.YELLOW),
                     styled(latencyMs / 1000f).formatted(Formatting.YELLOW));
         } else {
-            text = Translations.translateText(player, "pal.cmd.ping.other",
+            text = translations.translateText(player, "pal.cmd.ping.other",
                     target.getNameForScoreboard(),
                     styled(latencyMs).formatted(Formatting.YELLOW),
                     styled(latencyMs / 1000f).formatted(Formatting.YELLOW));

@@ -85,16 +85,16 @@ public class ImageMapCommand implements KibuCommand {
     }
 
     private void loadImageAndDo(ServerPlayerEntity player, String name, Consumer<BufferedImage> action) {
-        Translations Translations = commandService.getTranslations();
+        Translations translations = commandService.getTranslations();
 
         imageManager.getSource(name)
                 .thenApply(s -> {
-                    player.sendMessage(Translations.translateText(player, "pal.cmd.imagemap.processing"));
+                    player.sendMessage(translations.translateText(player, "pal.cmd.imagemap.processing"));
                     return s;
                 })
                 .thenCompose(imageManager::loadImage)
                 .exceptionally(error -> {
-                    player.sendMessage(Translations.translateText(player, "pal.cmd.imagemap.not_found")
+                    player.sendMessage(translations.translateText(player, "pal.cmd.imagemap.not_found")
                             .formatted(RED));
                     return null;
                 })
@@ -104,7 +104,7 @@ public class ImageMapCommand implements KibuCommand {
                     }
                 })
                 .exceptionally(error -> {
-                    player.sendMessage(Translations.translateText(player, "pal.cmd.imagemap.error")
+                    player.sendMessage(translations.translateText(player, "pal.cmd.imagemap.error")
                             .formatted(RED));
                     return null;
                 });

@@ -56,8 +56,8 @@ public class FeedCommand implements KibuCommand {
         hungerManager.setFoodLevel(20);
         hungerManager.setSaturationLevel(5f);
 
-        Translations Translations = commandService.getTranslations();
-        player.sendMessage(Translations.translateText(player, "pal.cmd.feed.fed_you").formatted(Formatting.GREEN));
+        Translations translations = commandService.getTranslations();
+        player.sendMessage(translations.translateText(player, "pal.cmd.feed.fed_you").formatted(Formatting.GREEN));
     }
 
     private int feed(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {

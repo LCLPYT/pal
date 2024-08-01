@@ -58,17 +58,17 @@ public class InventoryCommand implements KibuCommand {
         PlayerInventory inv = target.getInventory();
         ScreenHandlerFactory baseFactory = (syncId, inventory, p) -> new GenericContainerScreenHandler(ScreenHandlerType.GENERIC_9X4, syncId, inventory, inv, 4);
 
-        Translations Translations = commandService.getTranslations();
-        RootText title = Translations.translateText(player, "pal.cmd.inv.title", target.getNameForScoreboard());
+        Translations translations = commandService.getTranslations();
+        RootText title = translations.translateText(player, "pal.cmd.inv.title", target.getNameForScoreboard());
 
         player.openHandledScreen(new SimpleNamedScreenHandlerFactory(baseFactory, title));
 
         RootText text;
 
         if (player != target) {
-            text = Translations.translateText(player, "pal.cmd.inv.opened", styled(target.getNameForScoreboard()).formatted(Formatting.YELLOW));
+            text = translations.translateText(player, "pal.cmd.inv.opened", styled(target.getNameForScoreboard()).formatted(Formatting.YELLOW));
         } else {
-            text = Translations.translateText(player, "pal.cmd.inv.self");
+            text = translations.translateText(player, "pal.cmd.inv.self");
         }
 
         player.sendMessage(text.formatted(Formatting.GREEN));

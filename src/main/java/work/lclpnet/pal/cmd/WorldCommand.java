@@ -105,10 +105,10 @@ public class WorldCommand implements KibuCommand {
 
         teleportEntity(player, world, pos);
 
-        Translations Translations = commandService.getTranslations();
+        Translations translations = commandService.getTranslations();
         Identifier id = world.getRegistryKey().getValue();
 
-        source.sendMessage(Translations.translateText(source, "pal.cmd.world.teleport.single",
+        source.sendMessage(translations.translateText(source, "pal.cmd.world.teleport.single",
                 styled(player.getNameForScoreboard(), Formatting.YELLOW),
                 styled(id, Formatting.YELLOW)).formatted(Formatting.GREEN));
 

@@ -18,12 +18,12 @@ import java.nio.file.Path;
 public class PalModule {
 
     private final Logger logger;
-    private final Translations Translations;
+    private final Translations translations;
     private final Scheduler scheduler;
 
-    public PalModule(Logger logger, Translations Translations, Scheduler scheduler) {
+    public PalModule(Logger logger, Translations translations, Scheduler scheduler) {
         this.logger = logger;
-        this.Translations = Translations;
+        this.translations = translations;
         this.scheduler = scheduler;
     }
 
@@ -34,7 +34,7 @@ public class PalModule {
 
     @Provides
     Translations provideTranslations() {
-        return Translations;
+        return translations;
     }
 
     @Provides
