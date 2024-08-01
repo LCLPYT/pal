@@ -5,7 +5,7 @@ import dagger.Provides;
 import net.fabricmc.loader.api.FabricLoader;
 import org.slf4j.Logger;
 import work.lclpnet.kibu.scheduler.api.Scheduler;
-import work.lclpnet.kibu.translate.TranslationService;
+import work.lclpnet.kibu.translate.Translations;
 import work.lclpnet.pal.PalMod;
 import work.lclpnet.pal.config.ConfigAccess;
 import work.lclpnet.pal.config.ConfigManager;
@@ -18,12 +18,12 @@ import java.nio.file.Path;
 public class PalModule {
 
     private final Logger logger;
-    private final TranslationService translationService;
+    private final Translations Translations;
     private final Scheduler scheduler;
 
-    public PalModule(Logger logger, TranslationService translationService, Scheduler scheduler) {
+    public PalModule(Logger logger, Translations Translations, Scheduler scheduler) {
         this.logger = logger;
-        this.translationService = translationService;
+        this.Translations = Translations;
         this.scheduler = scheduler;
     }
 
@@ -33,8 +33,8 @@ public class PalModule {
     }
 
     @Provides
-    TranslationService provideTranslationService() {
-        return translationService;
+    Translations provideTranslations() {
+        return Translations;
     }
 
     @Provides

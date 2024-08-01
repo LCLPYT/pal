@@ -18,7 +18,7 @@ import work.lclpnet.kibu.cmd.type.KibuCommand;
 import work.lclpnet.kibu.map.MapColorUtil;
 import work.lclpnet.kibu.map.MapUtil;
 import work.lclpnet.kibu.map.mixin.MapStateAccessor;
-import work.lclpnet.kibu.translate.TranslationService;
+import work.lclpnet.kibu.translate.Translations;
 import work.lclpnet.pal.cmd.arg.ImageSuggestionProvider;
 import work.lclpnet.pal.service.CommandService;
 import work.lclpnet.pal.util.ImageManager;
@@ -85,16 +85,16 @@ public class ImageMapCommand implements KibuCommand {
     }
 
     private void loadImageAndDo(ServerPlayerEntity player, String name, Consumer<BufferedImage> action) {
-        TranslationService translationService = commandService.getTranslationService();
+        Translations Translations = commandService.getTranslations();
 
         imageManager.getSource(name)
                 .thenApply(s -> {
-                    player.sendMessage(translationService.translateText(player, "pal.cmd.imagemap.processing"));
+                    player.sendMessage(Translations.translateText(player, "pal.cmd.imagemap.processing"));
                     return s;
                 })
                 .thenCompose(imageManager::loadImage)
                 .exceptionally(error -> {
-                    player.sendMessage(translationService.translateText(player, "pal.cmd.imagemap.not_found")
+                    player.sendMessage(Translations.translateText(player, "pal.cmd.imagemap.not_found")
                             .formatted(RED));
                     return null;
                 })
@@ -104,7 +104,7 @@ public class ImageMapCommand implements KibuCommand {
                     }
                 })
                 .exceptionally(error -> {
-                    player.sendMessage(translationService.translateText(player, "pal.cmd.imagemap.error")
+                    player.sendMessage(Translations.translateText(player, "pal.cmd.imagemap.error")
                             .formatted(RED));
                     return null;
                 });

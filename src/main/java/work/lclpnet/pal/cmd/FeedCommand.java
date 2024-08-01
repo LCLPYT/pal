@@ -11,7 +11,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Formatting;
 import work.lclpnet.kibu.cmd.type.CommandRegistrar;
 import work.lclpnet.kibu.cmd.type.KibuCommand;
-import work.lclpnet.kibu.translate.TranslationService;
+import work.lclpnet.kibu.translate.Translations;
 import work.lclpnet.kibu.translate.text.RootText;
 import work.lclpnet.pal.service.CommandService;
 
@@ -56,8 +56,8 @@ public class FeedCommand implements KibuCommand {
         hungerManager.setFoodLevel(20);
         hungerManager.setSaturationLevel(5f);
 
-        TranslationService translationService = commandService.getTranslationService();
-        player.sendMessage(translationService.translateText(player, "pal.cmd.feed.fed_you").formatted(Formatting.GREEN));
+        Translations Translations = commandService.getTranslations();
+        player.sendMessage(Translations.translateText(player, "pal.cmd.feed.fed_you").formatted(Formatting.GREEN));
     }
 
     private int feed(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
