@@ -11,6 +11,7 @@ import work.lclpnet.kibu.hook.HookContainer;
 import work.lclpnet.kibu.hook.HookListenerModule;
 import work.lclpnet.kibu.hook.HookRegistrar;
 import work.lclpnet.kibu.hook.world.ServerWorldReadyCallback;
+import work.lclpnet.kibu.scheduler.KibuScheduling;
 import work.lclpnet.kibu.scheduler.api.Scheduler;
 import work.lclpnet.kibu.translate.util.ModTranslations;
 import work.lclpnet.pal.di.DaggerPalComponent;
@@ -28,7 +29,10 @@ public class PalMod implements ModInitializer {
     @Override
     public void onInitialize() {
         var loadingTranslations = ModTranslations.fromAssets(PalMod.ID, logger);
+
+        // create and register a scheduler
         var scheduler = new Scheduler(logger);
+        KibuScheduling.getRootScheduler().addChild(scheduler);
 
         component = DaggerPalComponent.builder()
                 .palModule(new PalModule(logger, loadingTranslations.translations(), scheduler))
