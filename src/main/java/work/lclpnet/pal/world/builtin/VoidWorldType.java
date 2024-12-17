@@ -26,8 +26,8 @@ public class VoidWorldType implements WorldType {
     public void configure(WorldCreationContext context, RuntimeWorldConfig config) {
         MinecraftServer server = context.getServer();
 
-        Registry<Biome> biomeRegistry = server.getRegistryManager().get(RegistryKeys.BIOME);
-        RegistryEntry.Reference<Biome> biomeReference = biomeRegistry.getEntry(BiomeKeys.THE_VOID).orElseThrow();
+        Registry<Biome> biomeRegistry = server.getRegistryManager().getOrThrow(RegistryKeys.BIOME);
+        RegistryEntry.Reference<Biome> biomeReference = biomeRegistry.getOptional(BiomeKeys.THE_VOID).orElseThrow();
 
         ChunkGenerator generator = new VoidChunkGenerator(biomeReference);
         config.setGenerator(generator);

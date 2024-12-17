@@ -96,7 +96,7 @@ public class SpeedCommand implements KibuCommand {
 
             if (walk) {
                 abilities.setWalkSpeed(value);
-                EntityAttributeInstance attribute = player.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED);
+                EntityAttributeInstance attribute = player.getAttributeInstance(EntityAttributes.MOVEMENT_SPEED);
 
                 if (attribute != null) {
                     attribute.setBaseValue(value);
@@ -161,7 +161,7 @@ public class SpeedCommand implements KibuCommand {
             if (walk) {
                 abilities.setWalkSpeed(0.1f);
 
-                EntityAttributeInstance attribute = player.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED);
+                EntityAttributeInstance attribute = player.getAttributeInstance(EntityAttributes.MOVEMENT_SPEED);
 
                 if (attribute != null) {
                     attribute.setBaseValue(0.1f);

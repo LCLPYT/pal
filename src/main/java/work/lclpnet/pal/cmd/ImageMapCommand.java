@@ -33,6 +33,8 @@ import java.util.function.Consumer;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.minecraft.util.Formatting.RED;
+import static net.minecraft.util.Formatting.YELLOW;
+import static work.lclpnet.kibu.translate.text.FormatWrapper.styled;
 
 public class ImageMapCommand implements KibuCommand {
 
@@ -94,7 +96,7 @@ public class ImageMapCommand implements KibuCommand {
                 })
                 .thenCompose(imageManager::loadImage)
                 .exceptionally(error -> {
-                    player.sendMessage(translations.translateText(player, "pal.cmd.imagemap.not_found")
+                    player.sendMessage(translations.translateText(player, "pal.cmd.imagemap.not_found", styled(name, YELLOW))
                             .formatted(RED));
                     return null;
                 })

@@ -327,7 +327,7 @@ public class PlateListener implements HookListenerModule {
     private BlockPos findTeleporterAbove(ServerWorld world, BlockPos start) {
         BlockPos.Mutable pos = start.mutableCopy();
 
-        for (int y = start.getY() + 1, maxY = world.getTopY(); y < maxY; y++) {
+        for (int y = start.getY() + 1, maxY = world.getTopYInclusive(); y <= maxY; y++) {
             pos.setY(y);
 
             if (isTeleporter(world, pos)) {

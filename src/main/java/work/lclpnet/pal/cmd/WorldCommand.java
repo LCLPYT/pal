@@ -134,6 +134,6 @@ public class WorldCommand implements KibuCommand {
     }
 
     private void teleportEntity(Entity entity, ServerWorld world, BlockPos pos) {
-        entity.teleport(world, pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, Set.of(), 0, 0);
+        entity.teleport(world, pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, Set.of(), 0, 0, true);
     }
 }
