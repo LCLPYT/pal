@@ -29,9 +29,8 @@ import work.lclpnet.kibu.hook.HookListenerModule;
 import work.lclpnet.kibu.hook.HookRegistrar;
 import work.lclpnet.kibu.hook.ServerTickHooks;
 import work.lclpnet.kibu.hook.entity.ServerLivingEntityHooks;
-import work.lclpnet.kibu.hook.player.PlayerMoveCallback;
+import work.lclpnet.kibu.hook.player.PlayerJumpCallback;
 import work.lclpnet.kibu.hook.player.PlayerSneakCallback;
-import work.lclpnet.kibu.hook.util.PositionRotation;
 import work.lclpnet.kibu.hook.world.PressurePlateCallback;
 import work.lclpnet.kibu.scheduler.api.Scheduler;
 import work.lclpnet.kibu.translate.Translations;
@@ -65,8 +64,8 @@ public class PlateListener implements HookListenerModule {
         registrar.registerHook(ServerLivingEntityHooks.ALLOW_DAMAGE, this::allowDamage);
         registrar.registerHook(ServerTickHooks.END_SERVER_TICK, this::serverTickEnd);
 
-        registrar.registerHook(PlayerMoveCallback.HOOK, (player, from, to) -> {
-            onMove(player, from, to);
+        registrar.registerHook(PlayerJumpCallback.HOOK, (player) -> {
+            onJump(player);
             return false;
         });
 
@@ -114,8 +113,8 @@ public class PlateListener implements HookListenerModule {
         }
     }
 
-    private void onMove(ServerPlayerEntity player, PositionRotation from, PositionRotation to) {
-        if (!player.isOnGround() || from.getY() >= to.getY() || !(player.getWorld() instanceof ServerWorld world)) return;  // no jump
+    private void onJump(ServerPlayerEntity player) {
+        if (!player.isOnGround() || !(player.getWorld() instanceof ServerWorld world)) return;
 
         BlockPos down = player.getBlockPos().down();
 

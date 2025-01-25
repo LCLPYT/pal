@@ -25,7 +25,7 @@
     "minecraft": "~1.21.4",
     "java": ">=21",
     "fabric-api": "*",
-    "kibu": "*"
+    "kibu": ">=0.139.0"
   },
   "suggests": {
     "fantasy": "*",
