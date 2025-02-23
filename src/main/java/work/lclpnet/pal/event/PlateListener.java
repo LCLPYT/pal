@@ -269,10 +269,26 @@ public class PlateListener implements HookListenerModule {
     }
 
     private boolean findPad(BlockView world, Vec3d pos, BlockPos.Mutable blockPos) {
+        // if there is no valid block underneath, terminate early
+        blockPos.set(floor(pos.x), floor(pos.y) - 1, floor(pos.z));
+        BlockState state = world.getBlockState(blockPos);
+
+        if (!state.isOf(Blocks.PISTON) && !state.isOf(Blocks.IRON_BLOCK)) {
+            return false;
+        }
+
         return find3x3(pos, blockPos, p -> isPad(world, p));
     }
 
     private boolean findElevator(BlockView world, Vec3d pos, BlockPos.Mutable blockPos) {
+        // if there is no valid block underneath, terminate early
+        blockPos.set(floor(pos.x), floor(pos.y) - 1, floor(pos.z));
+        BlockState state = world.getBlockState(blockPos);
+
+        if (!state.isOf(Blocks.PISTON) && !state.isOf(Blocks.DIAMOND_BLOCK) && !state.isOf(Blocks.BEACON)) {
+            return false;
+        }
+
         return find3x3(pos, blockPos, p -> isElevator(world, p));
     }
 
