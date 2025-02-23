@@ -41,10 +41,12 @@ import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.StreamSupport;
 
-import static java.lang.Math.abs;
+import static java.lang.Math.*;
 import static net.minecraft.util.math.MathHelper.floor;
 
 public class PlateListener implements HookListenerModule {
+
+    private static final double PLATFORM_TRIGGER_DIST = 1.d;
 
     private final PalConfig config;
     private final Scheduler scheduler;
@@ -183,7 +185,7 @@ public class PlateListener implements HookListenerModule {
         scheduler.interval(task -> {
             double x = player.getX(), y = player.getY(), z = player.getZ();
 
-            if (abs(x - startX) > 1 || abs(z - startZ) > 1) {
+            if (abs(x - startX) > PLATFORM_TRIGGER_DIST || abs(z - startZ) > PLATFORM_TRIGGER_DIST) {
                 player.removeStatusEffect(StatusEffects.LEVITATION);
             }
 
@@ -299,6 +301,10 @@ public class PlateListener implements HookListenerModule {
 
         for (int ox = -1; ox <= 1; ox++) {
             for (int oz = -1; oz <= 1; oz++) {
+                double distToCenter = max(abs(x + ox + 0.5 - pos.getX()), abs(z + oz + 0.5 - pos.getZ()));
+
+                if (distToCenter > PLATFORM_TRIGGER_DIST) continue;
+
                 blockPos.set(x + ox, y, z + oz);
 
                 if (predicate.test(blockPos)) {
