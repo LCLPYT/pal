@@ -45,5 +45,7 @@
   "pal.cmd.imagemap.processing": "Bild wird verarbeitet...",
   "pal.cmd.imagemap.not_found": "Fehler beim Laden des Bildes \"%s\"",
   "pal.cmd.imagemap.error": "Fehler beim Generieren der Karte",
-  "pal.teleporter.blocked": "Etwas blockiert den Weg..."
+  "pal.teleporter.blocked": "Etwas blockiert den Weg...",
+  "pal.edit_strength.title": "Stärke einstellen",
+  "pal.edit_strength.changed": "Stärke auf %s geändert"
 }

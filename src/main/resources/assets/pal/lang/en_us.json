@@ -45,5 +45,7 @@
   "pal.cmd.imagemap.processing": "Processing image...",
   "pal.cmd.imagemap.not_found": "Image \"%s\" could not be opened",
   "pal.cmd.imagemap.error": "Error generating filled map",
-  "pal.teleporter.blocked": "Something is blocking the way..."
+  "pal.teleporter.blocked": "Something is blocking the way...",
+  "pal.edit_strength.title": "Edit strength",
+  "pal.edit_strength.changed": "Changed strength to %s"
 }

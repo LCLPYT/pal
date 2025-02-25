@@ -8,7 +8,7 @@ public class PalConfig implements JsonConfig {
 
     public boolean enablePlates = false, enablePads = false, enableElevators = false, enableTeleporters = false;
     public boolean padLegacyAmount = false, elevatorLegacyAmount = false;
-    public float plateMotionY = 1f, plateStrength = 2f;
+    public float plateMotionY = 1f, plateStrength = 1f;
 
     public PalConfig() {}
 

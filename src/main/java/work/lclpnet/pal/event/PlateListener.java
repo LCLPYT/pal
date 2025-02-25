@@ -9,6 +9,7 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.particle.BlockStateParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.MinecraftServer;
@@ -17,14 +18,21 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.math.*;
+import net.minecraft.util.Hand;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import work.lclpnet.kibu.access.VelocityModifier;
 import work.lclpnet.kibu.hook.HookListenerModule;
 import work.lclpnet.kibu.hook.HookRegistrar;
 import work.lclpnet.kibu.hook.ServerTickHooks;
+import work.lclpnet.kibu.hook.entity.PlayerInteractionHooks;
 import work.lclpnet.kibu.hook.entity.ServerLivingEntityHooks;
 import work.lclpnet.kibu.hook.player.PlayerJumpCallback;
 import work.lclpnet.kibu.hook.player.PlayerSneakCallback;
@@ -33,6 +41,7 @@ import work.lclpnet.kibu.hook.world.PressurePlateCallback;
 import work.lclpnet.kibu.scheduler.api.Scheduler;
 import work.lclpnet.kibu.translate.Translations;
 import work.lclpnet.pal.config.PalConfig;
+import work.lclpnet.pal.util.StrengthConfigurator;
 
 import javax.inject.Inject;
 import java.util.HashSet;
@@ -41,7 +50,8 @@ import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.StreamSupport;
 
-import static java.lang.Math.*;
+import static java.lang.Math.abs;
+import static java.lang.Math.max;
 import static net.minecraft.util.math.MathHelper.floor;
 
 public class PlateListener implements HookListenerModule {
@@ -50,15 +60,16 @@ public class PlateListener implements HookListenerModule {
 
     private final PalConfig config;
     private final Scheduler scheduler;
-    private final Set<UUID> noFall = new HashSet<>();
-    private final Set<UUID> padCooldown = new HashSet<>(), teleporterCooldown = new HashSet<>();
+    private final Set<UUID> noFall = new HashSet<>(), padCooldown = new HashSet<>(), teleporterCooldown = new HashSet<>();
     private final Translations translations;
+    private final StrengthConfigurator strengthConfigurator;
 
     @Inject
-    public PlateListener(PalConfig config, Scheduler scheduler, Translations translations) {
+    public PlateListener(PalConfig config, Scheduler scheduler, Translations translations, StrengthConfigurator strengthConfigurator) {
         this.config = config;
         this.scheduler = scheduler;
         this.translations = translations;
+        this.strengthConfigurator = strengthConfigurator;
     }
 
     @Override
@@ -76,23 +87,25 @@ public class PlateListener implements HookListenerModule {
             onSneak(player, sneaking);
             return false;
         });
+
+        registrar.registerHook(PlayerInteractionHooks.USE_BLOCK, this::onRightClickBlock);
     }
 
     private boolean onPressurePlate(World world, BlockPos pos, Entity entity) {
         if (!config.enablePlates
                 || !(entity instanceof ServerPlayerEntity player)
-                || !world.getBlockState(pos).isOf(Blocks.LIGHT_WEIGHTED_PRESSURE_PLATE)) {
+                || !isBoosterPlate(world, pos)) {
             return false;
         }
 
-        BlockState below = world.getBlockState(pos.down());
+        Vec3d rotation = player.getRotationVector()
+                .multiply(config.plateStrength);
 
-        if (!below.isOf(Blocks.GOLD_BLOCK)) return false;
+        double extraStrength = strengthConfigurator.getStrength(world, pos);
 
-        Vec3d rotation = player.getRotationVector();
-        rotation.multiply(config.plateStrength);
+        Vec3d velocity = new Vec3d(rotation.getX(), config.plateMotionY, rotation.getZ())
+                .multiply(extraStrength);
 
-        Vec3d velocity = new Vec3d(rotation.getX(), config.plateMotionY, rotation.getZ());
         VelocityModifier.setVelocity(player, velocity);
 
         preventFallDamageOnce(player);
@@ -130,7 +143,7 @@ public class PlateListener implements HookListenerModule {
         Vec3d pos = player.getPos();
         var blockPos = new BlockPos.Mutable();
 
-        if (config.enablePads && findPad(world, pos, blockPos)) {
+        if (config.enablePads && findPad(world, pos, blockPos, PLATFORM_TRIGGER_DIST)) {
             handleJumpPad(player, world, blockPos);
             return;
         }
@@ -153,7 +166,7 @@ public class PlateListener implements HookListenerModule {
         Vec3d pos = player.getPos();
         var blockPos = new BlockPos.Mutable();
 
-        if (config.enableElevators && findElevator(world, pos, blockPos)) {
+        if (config.enableElevators && findElevator(world, pos, blockPos, PLATFORM_TRIGGER_DIST)) {
             useElevator(player, world, blockPos);
             return;
         }
@@ -241,16 +254,22 @@ public class PlateListener implements HookListenerModule {
         player.getWorld().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.BLOCK_PISTON_EXTEND, SoundCategory.BLOCKS, 3, 2);
     }
 
-    private double calculatePadStrength(World world, BlockPos.Mutable pos, boolean legacy) {
+    private double calculatePadStrength(ServerWorld world, BlockPos.Mutable pos, boolean legacy) {
+        double scale = strengthConfigurator.getStrength(world, pos);
+
         int emeraldBlocks = countBlocks(world, pos);
 
+        double base;
+
         if (legacy) {
-            return emeraldBlocks + 1;
+            base = emeraldBlocks + 1;
+        } else if (emeraldBlocks <= 0) {
+            base = 1;
+        } else {
+            base = 1.25 + emeraldBlocks / 5d;
         }
 
-        if (emeraldBlocks <= 0) return 1;
-
-        return 1.25 + emeraldBlocks / 5d;
+        return base * scale;
     }
 
     private int countBlocks(World world, BlockPos.Mutable pos) {
@@ -270,7 +289,7 @@ public class PlateListener implements HookListenerModule {
         return i;
     }
 
-    private boolean findPad(BlockView world, Vec3d pos, BlockPos.Mutable blockPos) {
+    private boolean findPad(BlockView world, Vec3d pos, BlockPos.Mutable blockPos, double triggerMargin) {
         // if there is no valid block underneath, terminate early
         blockPos.set(floor(pos.x), floor(pos.y) - 1, floor(pos.z));
         BlockState state = world.getBlockState(blockPos);
@@ -279,10 +298,10 @@ public class PlateListener implements HookListenerModule {
             return false;
         }
 
-        return find3x3(pos, blockPos, p -> isPad(world, p));
+        return find3x3(pos, blockPos, p -> isPad(world, p), triggerMargin);
     }
 
-    private boolean findElevator(BlockView world, Vec3d pos, BlockPos.Mutable blockPos) {
+    private boolean findElevator(BlockView world, Vec3d pos, BlockPos.Mutable blockPos, double triggerMargin) {
         // if there is no valid block underneath, terminate early
         blockPos.set(floor(pos.x), floor(pos.y) - 1, floor(pos.z));
         BlockState state = world.getBlockState(blockPos);
@@ -291,10 +310,10 @@ public class PlateListener implements HookListenerModule {
             return false;
         }
 
-        return find3x3(pos, blockPos, p -> isElevator(world, p));
+        return find3x3(pos, blockPos, p -> isElevator(world, p), triggerMargin);
     }
 
-    private boolean find3x3(Vec3d pos, BlockPos.Mutable blockPos, Predicate<BlockPos.Mutable> predicate) {
+    private boolean find3x3(Vec3d pos, BlockPos.Mutable blockPos, Predicate<BlockPos.Mutable> predicate, double triggerMargin) {
         int x = floor(pos.x);
         int y = floor(pos.y) - 1;
         int z = floor(pos.z);
@@ -303,7 +322,7 @@ public class PlateListener implements HookListenerModule {
             for (int oz = -1; oz <= 1; oz++) {
                 double distToCenter = max(abs(x + ox + 0.5 - pos.getX()), abs(z + oz + 0.5 - pos.getZ()));
 
-                if (distToCenter > PLATFORM_TRIGGER_DIST) continue;
+                if (distToCenter > triggerMargin) continue;
 
                 blockPos.set(x + ox, y, z + oz);
 
@@ -343,6 +362,10 @@ public class PlateListener implements HookListenerModule {
         pos.set(x, y, z);
 
         return isCorneredBy(pos, p -> world.getBlockState(p).isOf(Blocks.DIAMOND_BLOCK));
+    }
+
+    private boolean isBoosterPlate(BlockView world, BlockPos pos) {
+        return world.getBlockState(pos).isOf(Blocks.LIGHT_WEIGHTED_PRESSURE_PLATE) && world.getBlockState(pos.down()).isOf(Blocks.GOLD_BLOCK);
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
@@ -444,4 +467,28 @@ public class PlateListener implements HookListenerModule {
 
         return state.isOf(Blocks.LAPIS_BLOCK) && world.isReceivingRedstonePower(blockPos);
     }
+
+    private ActionResult onRightClickBlock(PlayerEntity _player, World world, Hand hand, BlockHitResult hitResult) {
+        if (_player instanceof ServerPlayerEntity player && player.isCreative() && hand == Hand.MAIN_HAND && player.getMainHandStack().isEmpty()) {
+            return checkEditClick(world, hitResult, player);
+        }
+
+        return ActionResult.PASS;
+    }
+
+    private ActionResult checkEditClick(World world, BlockHitResult hitResult, ServerPlayerEntity player) {
+        var blockPos = hitResult.getBlockPos().mutableCopy();
+
+        if (isBoosterPlate(world, blockPos)
+                || findPad(world, hitResult.getPos(), blockPos, 1.51)
+                || findElevator(world, hitResult.getPos(), blockPos, 1.51)) {
+
+            strengthConfigurator.edit(player, blockPos);
+
+            return ActionResult.SUCCESS_SERVER;
+        }
+
+        return ActionResult.PASS;
+    }
+
 }
