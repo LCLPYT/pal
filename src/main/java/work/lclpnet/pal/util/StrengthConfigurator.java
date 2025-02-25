@@ -1,5 +1,6 @@
 package work.lclpnet.pal.util;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MarkerEntity;
 import net.minecraft.nbt.NbtCompound;
@@ -116,5 +117,13 @@ public class StrengthConfigurator {
         } catch (NumberFormatException ignored) {
             return OptionalDouble.empty();
         }
+    }
+
+    public boolean isMarker(Entity entity) {
+        if (!(entity instanceof MarkerEntity marker)) return false;
+
+        NbtCompound data = ((MarkerEntityAccessor) marker).getData();
+
+        return data.contains(STRENGTH_KEY);
     }
 }

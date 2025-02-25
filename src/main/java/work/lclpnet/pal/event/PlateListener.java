@@ -33,6 +33,7 @@ import work.lclpnet.kibu.hook.HookListenerModule;
 import work.lclpnet.kibu.hook.HookRegistrar;
 import work.lclpnet.kibu.hook.ServerTickHooks;
 import work.lclpnet.kibu.hook.entity.PlayerInteractionHooks;
+import work.lclpnet.kibu.hook.entity.ServerEntityHooks;
 import work.lclpnet.kibu.hook.entity.ServerLivingEntityHooks;
 import work.lclpnet.kibu.hook.player.PlayerJumpCallback;
 import work.lclpnet.kibu.hook.player.PlayerSneakCallback;
@@ -56,7 +57,7 @@ import static net.minecraft.util.math.MathHelper.floor;
 
 public class PlateListener implements HookListenerModule {
 
-    private static final double PLATFORM_TRIGGER_DIST = 1.d;
+    private static final double PLATFORM_TRIGGER_DIST = 1.1d;
 
     private final PalConfig config;
     private final Scheduler scheduler;
@@ -77,6 +78,7 @@ public class PlateListener implements HookListenerModule {
         registrar.registerHook(PressurePlateCallback.HOOK, this::onPressurePlate);
         registrar.registerHook(ServerLivingEntityHooks.ALLOW_DAMAGE, this::allowDamage);
         registrar.registerHook(ServerTickHooks.END_SERVER_TICK, this::serverTickEnd);
+        registrar.registerHook(ServerEntityHooks.ENTITY_LOAD, this::cleanUpMarker);
 
         registrar.registerHook(PlayerJumpCallback.HOOK, (player) -> {
             onJump(player);
@@ -89,6 +91,25 @@ public class PlateListener implements HookListenerModule {
         });
 
         registrar.registerHook(PlayerInteractionHooks.USE_BLOCK, this::onRightClickBlock);
+    }
+
+    private void cleanUpMarker(Entity entity, ServerWorld world) {
+        if (entity.isRemoved() || !strengthConfigurator.isMarker(entity)) return;
+
+        BlockPos pos = entity.getBlockPos();
+
+        if (isBoosterPlate(world, pos)) return;
+
+        var mutPos = pos.mutableCopy();
+
+        if (isPad(world, mutPos)) return;
+
+        mutPos.set(pos);
+
+        if (isElevator(world, mutPos)) return;
+
+        // host no longer present
+        entity.discard();
     }
 
     private boolean onPressurePlate(World world, BlockPos pos, Entity entity) {
