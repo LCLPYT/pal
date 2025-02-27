@@ -10,6 +10,7 @@ import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.BlockStateParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.MinecraftServer;
@@ -119,8 +120,9 @@ public class PlateListener implements HookListenerModule {
             return false;
         }
 
-        double horizontal = markerConfigurator.getStrength(world, pos, MarkerConfigurator.Property.HORIZONTAL_STRENGTH);
-        double vertical = markerConfigurator.getStrength(world, pos, MarkerConfigurator.Property.VERTICAL_STRENGTH);
+        NbtCompound markerData = markerConfigurator.getMarkerData(world, pos);
+        double horizontal = markerConfigurator.getStrength(markerData, MarkerConfigurator.Property.HORIZONTAL_STRENGTH);
+        double vertical = markerConfigurator.getStrength(markerData, MarkerConfigurator.Property.VERTICAL_STRENGTH);
 
         Vec3d rotation = player.getRotationVector();
         Vec3d velocity = rotation.multiply(config.plateStrength * horizontal)

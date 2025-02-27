@@ -17,6 +17,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.world.EntityView;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import work.lclpnet.kibu.translate.Translations;
 import work.lclpnet.kibu.translate.text.TextTranslatable;
 import work.lclpnet.kibu.translate.util.LocaleUtil;
@@ -35,6 +36,8 @@ import static net.minecraft.util.Formatting.*;
 import static work.lclpnet.kibu.translate.text.FormatWrapper.styled;
 
 public class MarkerConfigurator {
+
+    public static final String PAL_MARKER_KEY = "pal:marker";
 
     private final Translations translations;
 
@@ -108,15 +111,29 @@ public class MarkerConfigurator {
         return df;
     }
 
-    public double getStrength(EntityView world, BlockPos pos, Property property) {
+    public @Nullable NbtCompound getMarkerData(EntityView world, BlockPos pos) {
         var markers = world.getEntitiesByClass(MarkerEntity.class, new Box(pos), marker -> true);
 
         for (MarkerEntity marker : markers) {
             NbtCompound data = ((MarkerEntityAccessor) marker).getData();
 
-            if (!data.contains(property.nbtKey, NbtElement.DOUBLE_TYPE)) continue;
+            if (isPalMarker(marker)) {
+                return data.getCompound(PAL_MARKER_KEY);
+            }
+        }
 
-            return max(0.0, data.getDouble(property.nbtKey));
+        return null;
+    }
+
+    public double getStrength(EntityView world, BlockPos pos, Property property) {
+        NbtCompound markerData = getMarkerData(world, pos);
+
+        return getStrength(markerData, property);
+    }
+
+    public double getStrength(@Nullable NbtCompound markerData, Property property) {
+        if (markerData != null && markerData.contains(property.id(), NbtElement.DOUBLE_TYPE)) {
+            return max(0.0, markerData.getDouble(property.id()));
         }
 
         return 1.0;
@@ -127,31 +144,33 @@ public class MarkerConfigurator {
 
         var markers = world.getEntitiesByClass(MarkerEntity.class, new Box(pos), marker -> true);
 
-        boolean found = false;
+        NbtCompound markerData = null;
 
         for (MarkerEntity marker : markers) {
             NbtCompound data = ((MarkerEntityAccessor) marker).getData();
 
             if (!isPalMarker(marker)) continue;
 
-            if (found) {
+            if (markerData != null) {
                 marker.discard();
                 continue;
             }
 
-            found = true;
-            data.putDouble(property.nbtKey, strength);
+            markerData = data.getCompound(PAL_MARKER_KEY);
         }
 
-        if (found) return;
+        if (markerData == null) {
+            var marker = new MarkerEntity(EntityType.MARKER, world);
+            marker.setPosition(pos.toCenterPos());
 
-        var marker = new MarkerEntity(EntityType.MARKER, world);
-        marker.setPosition(pos.toCenterPos());
+            NbtCompound data = ((MarkerEntityAccessor) marker).getData();
+            markerData = new NbtCompound();
+            data.put(PAL_MARKER_KEY, markerData);
 
-        NbtCompound data = ((MarkerEntityAccessor) marker).getData();
-        data.putDouble(property.nbtKey, strength);
+            world.spawnEntity(marker);
+        }
 
-        world.spawnEntity(marker);
+        markerData.putDouble(property.id(), strength);
     }
 
     private static OptionalDouble unsignedDouble(String input) {
@@ -169,25 +188,13 @@ public class MarkerConfigurator {
 
         NbtCompound data = ((MarkerEntityAccessor) marker).getData();
 
-        for (Property prop : Property.values()) {
-            if (data.contains(prop.nbtKey)) {
-                return true;
-            }
-        }
-
-        return false;
+        return data.contains(PAL_MARKER_KEY, NbtElement.COMPOUND_TYPE);
     }
 
     public enum Property {
-        STRENGTH("pal:strength"),
-        HORIZONTAL_STRENGTH("pal:horizontal_strength"),
-        VERTICAL_STRENGTH("pal:vertical_strength");
-
-        public final String nbtKey;
-
-        Property(String nbtKey) {
-            this.nbtKey = nbtKey;
-        }
+        STRENGTH,
+        HORIZONTAL_STRENGTH,
+        VERTICAL_STRENGTH;
 
         public String id() {
             return name().toLowerCase(Locale.ROOT);
