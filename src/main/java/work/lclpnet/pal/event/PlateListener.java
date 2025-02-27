@@ -42,7 +42,7 @@ import work.lclpnet.kibu.hook.world.PressurePlateCallback;
 import work.lclpnet.kibu.scheduler.api.Scheduler;
 import work.lclpnet.kibu.translate.Translations;
 import work.lclpnet.pal.config.PalConfig;
-import work.lclpnet.pal.util.StrengthConfigurator;
+import work.lclpnet.pal.util.MarkerConfigurator;
 
 import javax.inject.Inject;
 import java.util.HashSet;
@@ -63,14 +63,14 @@ public class PlateListener implements HookListenerModule {
     private final Scheduler scheduler;
     private final Set<UUID> noFall = new HashSet<>(), padCooldown = new HashSet<>(), teleporterCooldown = new HashSet<>();
     private final Translations translations;
-    private final StrengthConfigurator strengthConfigurator;
+    private final MarkerConfigurator markerConfigurator;
 
     @Inject
-    public PlateListener(PalConfig config, Scheduler scheduler, Translations translations, StrengthConfigurator strengthConfigurator) {
+    public PlateListener(PalConfig config, Scheduler scheduler, Translations translations, MarkerConfigurator markerConfigurator) {
         this.config = config;
         this.scheduler = scheduler;
         this.translations = translations;
-        this.strengthConfigurator = strengthConfigurator;
+        this.markerConfigurator = markerConfigurator;
     }
 
     @Override
@@ -94,7 +94,7 @@ public class PlateListener implements HookListenerModule {
     }
 
     private void cleanUpMarker(Entity entity, ServerWorld world) {
-        if (entity.isRemoved() || !strengthConfigurator.isMarker(entity)) return;
+        if (entity.isRemoved() || !markerConfigurator.isPalMarker(entity)) return;
 
         BlockPos pos = entity.getBlockPos();
 
@@ -119,13 +119,12 @@ public class PlateListener implements HookListenerModule {
             return false;
         }
 
-        Vec3d rotation = player.getRotationVector()
-                .multiply(config.plateStrength);
+        double horizontal = markerConfigurator.getStrength(world, pos, MarkerConfigurator.Property.HORIZONTAL_STRENGTH);
+        double vertical = markerConfigurator.getStrength(world, pos, MarkerConfigurator.Property.VERTICAL_STRENGTH);
 
-        double extraStrength = strengthConfigurator.getStrength(world, pos);
-
-        Vec3d velocity = new Vec3d(rotation.getX(), config.plateMotionY, rotation.getZ())
-                .multiply(extraStrength);
+        Vec3d rotation = player.getRotationVector();
+        Vec3d velocity = rotation.multiply(config.plateStrength * horizontal)
+                .withAxis(Direction.Axis.Y, config.plateStrength * vertical);
 
         VelocityModifier.setVelocity(player, velocity);
 
@@ -276,7 +275,7 @@ public class PlateListener implements HookListenerModule {
     }
 
     private double calculatePadStrength(ServerWorld world, BlockPos.Mutable pos, boolean legacy) {
-        double scale = strengthConfigurator.getStrength(world, pos);
+        double scale = markerConfigurator.getStrength(world, pos, MarkerConfigurator.Property.STRENGTH);
 
         int emeraldBlocks = countBlocks(world, pos);
 
@@ -500,11 +499,15 @@ public class PlateListener implements HookListenerModule {
     private ActionResult checkEditClick(World world, BlockHitResult hitResult, ServerPlayerEntity player) {
         var blockPos = hitResult.getBlockPos().mutableCopy();
 
-        if (isBoosterPlate(world, blockPos)
-                || findPad(world, hitResult.getPos(), blockPos, 1.51)
+        if (isBoosterPlate(world, blockPos)) {
+            markerConfigurator.editBoosterPlate(player, blockPos);
+            return ActionResult.SUCCESS_SERVER;
+        }
+
+        if (findPad(world, hitResult.getPos(), blockPos, 1.51)
                 || findElevator(world, hitResult.getPos(), blockPos, 1.51)) {
 
-            strengthConfigurator.edit(player, blockPos);
+            markerConfigurator.editStrength(player, blockPos, MarkerConfigurator.Property.STRENGTH);
 
             return ActionResult.SUCCESS_SERVER;
         }

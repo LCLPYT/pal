@@ -22,54 +22,41 @@ import java.util.function.Predicate;
 
 public class TextPrompt {
 
-    private final Text title;
-    private final String initial;
-    private final Predicate<String> validator;
+    private TextPrompt() {}
 
-    public TextPrompt(Text title) {
-        this(title, input -> true);
-    }
-
-    public TextPrompt(Text title, Predicate<String> validator) {
-        this(title, "", validator);
-    }
-
-    public TextPrompt(Text title, String initial, Predicate<String> validator) {
-        this.title = title;
-        this.initial = initial;
-        this.validator = validator;
-    }
-
-    public CompletableFuture<Optional<String>> open(ServerPlayerEntity player) {
+    public static CompletableFuture<Optional<String>> open(ServerPlayerEntity player, Text title, String initial, Predicate<String> validator) {
         var future = new CompletableFuture<Optional<String>>();
 
-        ScreenHandlerFactory factory = (syncId, inv, p) -> createMenu(syncId, inv, future);
+        ScreenHandlerFactory factory = (syncId, inv, p) -> {
+            var handler = new TextInputHandler(syncId, inv, future, validator);
+            handler.setInitial(initial);
+
+            return handler;
+        };
+
         player.openHandledScreen(new SimpleNamedScreenHandlerFactory(factory, title));
 
         return future;
-    }
-
-    private TextInputHandler createMenu(int syncId, PlayerInventory inventory, CompletableFuture<Optional<String>> future) {
-        var handler = new TextInputHandler(syncId, inventory, future);
-        handler.setInitial(initial);
-
-        return handler;
     }
 
     public interface Handler {
         void onClick(PlayerInventoryHooks.ClickEvent event);
     }
 
-    private class TextInputHandler extends AnvilScreenHandler implements Handler {
+    private static class TextInputHandler extends AnvilScreenHandler implements Handler {
 
         private final ItemStack EMPTY_INEQUALITY = new ItemStack(Items.POISONOUS_POTATO);  // ¯\_(ツ)_/¯
         private final CompletableFuture<Optional<String>> future;
+        private final Predicate<String> validator;
         private @Nullable String value = null;
         private boolean changed = false;
 
-        protected TextInputHandler(int syncId, PlayerInventory inventory, CompletableFuture<Optional<String>> future) {
+        protected TextInputHandler(int syncId, PlayerInventory inventory,
+                                   CompletableFuture<Optional<String>> future,
+                                   Predicate<String> validator) {
             super(syncId, inventory);
             this.future = future;
+            this.validator = validator;
         }
 
         @Override
@@ -140,7 +127,10 @@ public class TextPrompt {
             if (event.slot() != 2 || value == null) return;
 
             future.complete(Optional.of(value));
-            event.player().closeHandledScreen();
+
+            if (player.currentScreenHandler == this) {
+                event.player().closeHandledScreen();
+            }
         }
 
         @Override

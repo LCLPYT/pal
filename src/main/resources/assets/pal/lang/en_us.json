@@ -46,6 +46,13 @@
   "pal.cmd.imagemap.not_found": "Image \"%s\" could not be opened",
   "pal.cmd.imagemap.error": "Error generating filled map",
   "pal.teleporter.blocked": "Something is blocking the way...",
+  "pal.edit_booster_plate.title": "Edit booster plate",
+  "pal.edit_booster_plate.horizontal": "Horizontal strength",
+  "pal.edit_booster_plate.vertical": "Vertical strength",
   "pal.edit_strength.title": "Edit strength",
-  "pal.edit_strength.changed": "Changed strength to %s"
+  "pal.edit_strength.changed": "Changed strength to %s",
+  "pal.edit_horizontal_strength.title": "Horizontal strength",
+  "pal.edit_horizontal_strength.changed": "Changed horizontal strength to %s",
+  "pal.edit_vertical_strength.title": "Vertical strength",
+  "pal.edit_vertical_strength.changed": "Changed vertical strength to %s"
 }
