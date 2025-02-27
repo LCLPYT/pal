@@ -20,15 +20,13 @@
       "work.lclpnet.pal.PalMod"
     ]
   },
-  "mixins": [
-    "pal.mixins.json"
-  ],
+  "mixins": [],
   "depends": {
     "fabricloader": ">=0.16.9",
     "minecraft": "~1.21.4",
     "java": ">=21",
     "fabric-api": "*",
-    "kibu": ">=0.141.0"
+    "kibu": ">=0.142.0"
   },
   "suggests": {
     "fantasy": "*",

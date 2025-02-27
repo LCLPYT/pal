@@ -18,10 +18,12 @@ import net.minecraft.util.math.Box;
 import net.minecraft.world.EntityView;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import work.lclpnet.kibu.access.entity.MarkerEntityAccess;
+import work.lclpnet.kibu.inv.prompt.OptionPrompt;
+import work.lclpnet.kibu.inv.prompt.TextPrompt;
 import work.lclpnet.kibu.translate.Translations;
 import work.lclpnet.kibu.translate.text.TextTranslatable;
 import work.lclpnet.kibu.translate.util.LocaleUtil;
-import work.lclpnet.pal.mixin.MarkerEntityAccessor;
 
 import javax.inject.Inject;
 import java.text.DecimalFormat;
@@ -115,7 +117,7 @@ public class MarkerConfigurator {
         var markers = world.getEntitiesByClass(MarkerEntity.class, new Box(pos), marker -> true);
 
         for (MarkerEntity marker : markers) {
-            NbtCompound data = ((MarkerEntityAccessor) marker).getData();
+            NbtCompound data = MarkerEntityAccess.getData(marker);
 
             if (isPalMarker(marker)) {
                 return data.getCompound(PAL_MARKER_KEY);
@@ -147,7 +149,7 @@ public class MarkerConfigurator {
         NbtCompound markerData = null;
 
         for (MarkerEntity marker : markers) {
-            NbtCompound data = ((MarkerEntityAccessor) marker).getData();
+            NbtCompound data = MarkerEntityAccess.getData(marker);
 
             if (!isPalMarker(marker)) continue;
 
@@ -163,7 +165,7 @@ public class MarkerConfigurator {
             var marker = new MarkerEntity(EntityType.MARKER, world);
             marker.setPosition(pos.toCenterPos());
 
-            NbtCompound data = ((MarkerEntityAccessor) marker).getData();
+            NbtCompound data = MarkerEntityAccess.getData(marker);
             markerData = new NbtCompound();
             data.put(PAL_MARKER_KEY, markerData);
 
@@ -186,7 +188,7 @@ public class MarkerConfigurator {
     public boolean isPalMarker(Entity entity) {
         if (!(entity instanceof MarkerEntity marker)) return false;
 
-        NbtCompound data = ((MarkerEntityAccessor) marker).getData();
+        NbtCompound data = MarkerEntityAccess.getData(marker);
 
         return data.contains(PAL_MARKER_KEY, NbtElement.COMPOUND_TYPE);
     }
