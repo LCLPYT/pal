@@ -169,8 +169,8 @@ public class RuntimeWorldCommandMaker {
     }
 
     private void sendCreationSuccess(Identifier worldId, ServerCommandSource source) {
-        ClickEvent clickEvent = new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/world tp %s".formatted(worldId));
-        HoverEvent hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT, commandService.translateText(source, "pal.cmd.world.create.success.tp_hover")
+        ClickEvent clickEvent = new ClickEvent.RunCommand("/world tp %s".formatted(worldId));
+        HoverEvent hoverEvent = new HoverEvent.ShowText(commandService.translateText(source, "pal.cmd.world.create.success.tp_hover")
                 .formatted(Formatting.GREEN));
 
         source.sendMessage(commandService.translateText(source, "pal.cmd.world.create.success",

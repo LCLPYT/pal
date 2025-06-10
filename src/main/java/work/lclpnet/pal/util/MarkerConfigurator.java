@@ -1,13 +1,16 @@
 package work.lclpnet.pal.util;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MarkerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -18,7 +21,6 @@ import net.minecraft.util.math.Box;
 import net.minecraft.world.EntityView;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import work.lclpnet.kibu.access.entity.MarkerEntityAccess;
 import work.lclpnet.kibu.inv.prompt.OptionPrompt;
 import work.lclpnet.kibu.inv.prompt.TextPrompt;
 import work.lclpnet.kibu.translate.Translations;
@@ -30,16 +32,19 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.OptionalDouble;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.max;
+import static java.util.Optional.empty;
 import static net.minecraft.util.Formatting.*;
 import static work.lclpnet.kibu.translate.text.FormatWrapper.styled;
 
 public class MarkerConfigurator {
 
     public static final String PAL_MARKER_KEY = "pal:marker";
+    public static final MapCodec<Data> PAL_MARKER_CODEC = Data.CODEC.fieldOf(PAL_MARKER_KEY);
 
     private final Translations translations;
 
@@ -113,32 +118,50 @@ public class MarkerConfigurator {
         return df;
     }
 
-    public @Nullable NbtCompound getMarkerData(EntityView world, BlockPos pos) {
+    public @Nullable Data getMarkerData(EntityView world, BlockPos pos) {
         var markers = world.getEntitiesByClass(MarkerEntity.class, new Box(pos), marker -> true);
 
         for (MarkerEntity marker : markers) {
-            NbtCompound data = MarkerEntityAccess.getData(marker);
+            Data data = getData(marker);
 
-            if (isPalMarker(marker)) {
-                return data.getCompound(PAL_MARKER_KEY);
+            if (data != null) {
+                return data;
             }
         }
 
         return null;
     }
 
+    private @Nullable Data getData(MarkerEntity marker) {
+        NbtComponent customData = marker.get(DataComponentTypes.CUSTOM_DATA);
+
+        if (customData == null) return null;
+
+        return customData.get(PAL_MARKER_CODEC).result().orElse(null);
+    }
+
+    private void setData(MarkerEntity marker, Data data) {
+        NbtComponent customData = marker.get(DataComponentTypes.CUSTOM_DATA);
+
+        if (customData == null) return;
+
+        customData.with(NbtOps.INSTANCE, PAL_MARKER_CODEC, data)
+                .ifSuccess(component -> marker.setComponent(DataComponentTypes.CUSTOM_DATA, component));
+
+    }
+
     public double getStrength(EntityView world, BlockPos pos, Property property) {
-        NbtCompound markerData = getMarkerData(world, pos);
+        Data markerData = getMarkerData(world, pos);
 
         return getStrength(markerData, property);
     }
 
-    public double getStrength(@Nullable NbtCompound markerData, Property property) {
-        if (markerData != null && markerData.contains(property.id(), NbtElement.DOUBLE_TYPE)) {
-            return max(0.0, markerData.getDouble(property.id()));
+    public double getStrength(@Nullable Data markerData, Property property) {
+        if (markerData == null) {
+            return 1.0;
         }
 
-        return 1.0;
+        return max(0.0, markerData.strength(property).orElse(1.0));
     }
 
     public void setStrength(ServerWorld world, BlockPos pos, Property property, double strength) {
@@ -146,33 +169,38 @@ public class MarkerConfigurator {
 
         var markers = world.getEntitiesByClass(MarkerEntity.class, new Box(pos), marker -> true);
 
-        NbtCompound markerData = null;
+        MarkerEntity markerEntity = null;
+        Data markerData = Data.DEFAULT;
 
         for (MarkerEntity marker : markers) {
-            NbtCompound data = MarkerEntityAccess.getData(marker);
+            Data data = getData(marker);
 
-            if (!isPalMarker(marker)) continue;
+            if (data == null) continue;
 
-            if (markerData != null) {
+            // eliminate duplicate markers
+            if (markerEntity != null) {
                 marker.discard();
                 continue;
             }
 
-            markerData = data.getCompound(PAL_MARKER_KEY);
+            markerEntity = marker;
+            markerData = data;
         }
 
-        if (markerData == null) {
-            var marker = new MarkerEntity(EntityType.MARKER, world);
-            marker.setPosition(pos.toCenterPos());
+        markerData = markerData.with(property, strength);
 
-            NbtCompound data = MarkerEntityAccess.getData(marker);
-            markerData = new NbtCompound();
-            data.put(PAL_MARKER_KEY, markerData);
-
-            world.spawnEntity(marker);
+        if (markerEntity != null) {
+            setData(markerEntity, markerData);
+            return;
         }
 
-        markerData.putDouble(property.id(), strength);
+        // create new marker if none exists
+        markerEntity = new MarkerEntity(EntityType.MARKER, world);
+        markerEntity.setPosition(pos.toCenterPos());
+
+        setData(markerEntity, markerData);
+
+        world.spawnEntity(markerEntity);
     }
 
     private static OptionalDouble unsignedDouble(String input) {
@@ -188,9 +216,36 @@ public class MarkerConfigurator {
     public boolean isPalMarker(Entity entity) {
         if (!(entity instanceof MarkerEntity marker)) return false;
 
-        NbtCompound data = MarkerEntityAccess.getData(marker);
+        NbtComponent customData = marker.get(DataComponentTypes.CUSTOM_DATA);
 
-        return data.contains(PAL_MARKER_KEY, NbtElement.COMPOUND_TYPE);
+        return customData != null && customData.contains(PAL_MARKER_KEY);
+    }
+
+    public record Data(Optional<Double> strength, Optional<Double> horizontal, Optional<Double> vertical) {
+
+        public static final Codec<Data> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                PalCodecs.POSITIVE_DOUBLE.optionalFieldOf(Property.STRENGTH.id()).forGetter(Data::strength),
+                PalCodecs.POSITIVE_DOUBLE.optionalFieldOf(Property.HORIZONTAL_STRENGTH.id()).forGetter(Data::horizontal),
+                PalCodecs.POSITIVE_DOUBLE.optionalFieldOf(Property.VERTICAL_STRENGTH.id()).forGetter(Data::vertical)
+        ).apply(instance, Data::new));
+
+        public static final Data DEFAULT = new Data(empty(), empty(), empty());
+
+        public Optional<Double> strength(Property property) {
+            return switch (property) {
+                case STRENGTH -> strength;
+                case HORIZONTAL_STRENGTH -> horizontal;
+                case VERTICAL_STRENGTH -> vertical;
+            };
+        }
+
+        public Data with(Property property, double value) {
+            return switch (property) {
+                case STRENGTH -> new Data(Optional.of(value), horizontal, vertical);
+                case HORIZONTAL_STRENGTH -> new Data(strength, Optional.of(value), vertical);
+                case VERTICAL_STRENGTH -> new Data(strength, horizontal, Optional.of(value));
+            };
+        }
     }
 
     public enum Property {

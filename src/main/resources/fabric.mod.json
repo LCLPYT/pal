@@ -23,10 +23,10 @@
   "mixins": [],
   "depends": {
     "fabricloader": ">=0.16.9",
-    "minecraft": "~1.21.4",
+    "minecraft": "~1.21.5",
     "java": ">=21",
     "fabric-api": "*",
-    "kibu": ">=0.142.0"
+    "kibu": ">=0.145.0"
   },
   "suggests": {
     "fantasy": "*",
