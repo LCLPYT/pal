@@ -36,7 +36,7 @@ public class FormattingService {
                 continue;
             }
 
-            if (carry.length() > 0) {
+            if (!carry.isEmpty()) {
                 texts.add(Text.literal(carry.toString()).setStyle(style));
                 carry.setLength(0);
             }
@@ -46,7 +46,7 @@ public class FormattingService {
             texts.add(Text.literal(part.substring(1)).setStyle(style));
         }
 
-        if (carry.length() > 0) {
+        if (!carry.isEmpty()) {
             texts.add(Text.literal(carry.toString()).setStyle(style));
         }
 
@@ -54,7 +54,7 @@ public class FormattingService {
             return Text.empty();
         }
 
-        MutableText root = texts.get(0);
+        MutableText root = texts.getFirst();
 
         for (int i = 1, len = texts.size(); i < len; i++) {
             root.append(texts.get(i));

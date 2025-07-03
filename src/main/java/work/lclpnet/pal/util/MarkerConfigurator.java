@@ -76,7 +76,7 @@ public class MarkerConfigurator {
     }
 
     public void editStrength(ServerPlayerEntity player, BlockPos pos, Property property) {
-        double current = getStrength(player.getServerWorld(), pos, property);
+        double current = getStrength(player.getWorld(), pos, property);
 
         String initial = decimalFormat(translations.getLocale(player)).format(current);
 
@@ -92,7 +92,7 @@ public class MarkerConfigurator {
     }
 
     private void modifyStrength(ServerPlayerEntity player, BlockPos pos, Property property, double strength) {
-        setStrength(player.getServerWorld(), pos, property, strength);
+        setStrength(player.getWorld(), pos, property, strength);
 
         player.playSoundToPlayer(SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(), SoundCategory.MASTER, 0.5f, 2f);
 
