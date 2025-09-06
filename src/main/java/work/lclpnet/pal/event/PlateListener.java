@@ -49,7 +49,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.StreamSupport;
 
-import static java.lang.Math.abs;
+import static java.lang.Math.*;
 import static net.minecraft.util.math.MathHelper.floor;
 
 public class PlateListener implements HookListenerModule {
@@ -207,8 +207,11 @@ public class PlateListener implements HookListenerModule {
     private void useElevator(ServerPlayerEntity player, ServerWorld world, BlockPos.Mutable pos) {
         double strength = calculatePadStrength(world, pos, config.elevatorLegacyAmount);
 
+        int durationTicks = max(0, min(200, (int) round(200 * strength)));
+        int amplifier = (int) (strength * 5) + 10;
+
         player.removeStatusEffect(StatusEffects.LEVITATION);
-        player.addStatusEffect(new StatusEffectInstance(StatusEffects.LEVITATION, 200, (int) (strength * 5) + 10));
+        player.addStatusEffect(new StatusEffectInstance(StatusEffects.LEVITATION, durationTicks, amplifier));
 
         Vec3d velocity = player.getVelocity();
         velocity = new Vec3d(0, velocity.getY(), 0);
