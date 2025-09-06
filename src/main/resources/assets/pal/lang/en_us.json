@@ -49,10 +49,15 @@
   "pal.edit_booster_plate.title": "Edit booster plate",
   "pal.edit_booster_plate.horizontal": "Horizontal strength",
   "pal.edit_booster_plate.vertical": "Vertical strength",
+  "pal.edit_elevator.title": "Edit elevator",
+  "pal.edit_elevator.strength": "Speed",
+  "pal.edit_elevator.duration": "Duration",
   "pal.edit_strength.title": "Edit strength",
   "pal.edit_strength.changed": "Changed strength to %s",
   "pal.edit_horizontal_strength.title": "Horizontal strength",
   "pal.edit_horizontal_strength.changed": "Changed horizontal strength to %s",
   "pal.edit_vertical_strength.title": "Vertical strength",
-  "pal.edit_vertical_strength.changed": "Changed vertical strength to %s"
+  "pal.edit_vertical_strength.changed": "Changed vertical strength to %s",
+  "pal.edit_duration.title": "Duration",
+  "pal.edit_duration.changed": "Changed duration to %s"
 }

@@ -49,10 +49,15 @@
   "pal.edit_booster_plate.title": "Booster-Platte einstellen",
   "pal.edit_booster_plate.horizontal": "Horizontale Stärke",
   "pal.edit_booster_plate.vertical": "Vertikale Stärke",
+  "pal.edit_elevator.title": "Aufzug einstellen",
+  "pal.edit_elevator.strength": "Geschwindigkeit",
+  "pal.edit_elevator.duration": "Dauer",
   "pal.edit_strength.title": "Stärke einstellen",
   "pal.edit_strength.changed": "Stärke auf %s geändert",
   "pal.edit_horizontal_strength.title": "Horizontale Stärke",
   "pal.edit_horizontal_strength.changed": "Horizontale Stärke auf %s geändert",
   "pal.edit_vertical_strength.title": "Vertikale Stärke",
-  "pal.edit_vertical_strength.changed": "Vertikale Stärke auf %s geändert"
+  "pal.edit_vertical_strength.changed": "Vertikale Stärke auf %s geändert",
+  "pal.edit_duration.title": "Dauer",
+  "pal.edit_duration.changed": "Dauer auf %s geändert"
 }

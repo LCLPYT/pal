@@ -45,11 +45,13 @@ import work.lclpnet.pal.util.MarkerConfigurator;
 
 import javax.inject.Inject;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.StreamSupport;
 
-import static java.lang.Math.*;
+import static java.lang.Math.abs;
+import static java.lang.Math.round;
 import static net.minecraft.util.math.MathHelper.floor;
 
 public class PlateListener implements HookListenerModule {
@@ -205,9 +207,17 @@ public class PlateListener implements HookListenerModule {
     }
 
     private void useElevator(ServerPlayerEntity player, ServerWorld world, BlockPos.Mutable pos) {
-        double strength = calculatePadStrength(world, pos, config.elevatorLegacyAmount);
+        var markerData = markerConfigurator.getMarkerData(world, pos);
 
-        int durationTicks = max(0, min(200, (int) round(200 * strength)));
+        double durationSeconds = Optional.ofNullable(markerData)
+                .flatMap(data -> data.value(MarkerConfigurator.Property.DURATION))
+                .orElse(10.0);
+
+        int durationTicks = (int) round(durationSeconds * 20);
+
+        if (durationTicks <= 0) return;
+
+        double strength = calculatePadStrength(world, pos, markerData, config.elevatorLegacyAmount);
         int amplifier = (int) (strength * 5) + 10;
 
         player.removeStatusEffect(StatusEffects.LEVITATION);
@@ -261,7 +271,8 @@ public class PlateListener implements HookListenerModule {
 
         if (padCooldown.contains(uuid)) return;
 
-        double amount = calculatePadStrength(world, pos, config.padLegacyAmount);
+        var markerData = markerConfigurator.getMarkerData(world, pos);
+        double amount = calculatePadStrength(world, pos, markerData, config.padLegacyAmount);
 
         Vec3d velocity = player.getVelocity();
         velocity = new Vec3d(velocity.getX(), amount, velocity.getZ());
@@ -278,8 +289,8 @@ public class PlateListener implements HookListenerModule {
         player.getWorld().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.BLOCK_PISTON_EXTEND, SoundCategory.BLOCKS, 3, 2);
     }
 
-    private double calculatePadStrength(ServerWorld world, BlockPos.Mutable pos, boolean legacy) {
-        double scale = markerConfigurator.getStrength(world, pos, MarkerConfigurator.Property.STRENGTH);
+    private double calculatePadStrength(ServerWorld world, BlockPos.Mutable pos, MarkerConfigurator.Data data, boolean legacy) {
+        double scale = markerConfigurator.getStrength(data, MarkerConfigurator.Property.STRENGTH);
 
         int emeraldBlocks = countBlocks(world, pos);
 
@@ -389,15 +400,16 @@ public class PlateListener implements HookListenerModule {
             return ActionResult.SUCCESS_SERVER;
         }
 
-        if (contraptionService.findJumpPad(world, hitResult.getPos(), blockPos, 1.51)
-                || contraptionService.findElevator(world, hitResult.getPos(), blockPos, 1.51)) {
-
+        if (contraptionService.findJumpPad(world, hitResult.getPos(), blockPos, 1.51)) {
             markerConfigurator.editStrength(player, blockPos, MarkerConfigurator.Property.STRENGTH);
 
             return ActionResult.SUCCESS_SERVER;
         }
 
+        if (contraptionService.findElevator(world, hitResult.getPos(), blockPos, 1.51)) {
+            markerConfigurator.editElevator(player, blockPos);
+        }
+
         return ActionResult.PASS;
     }
-
 }

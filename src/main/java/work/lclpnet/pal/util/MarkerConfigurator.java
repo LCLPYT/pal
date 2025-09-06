@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.OptionalDouble;
+import java.util.function.DoubleSupplier;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.max;
@@ -76,7 +77,10 @@ public class MarkerConfigurator {
     }
 
     public void editStrength(ServerPlayerEntity player, BlockPos pos, Property property) {
-        double current = getStrength(player.getWorld(), pos, property);
+        editStrength(player, pos, property, () -> getStrength(player.getWorld(), pos, property));
+    }
+    public void editStrength(ServerPlayerEntity player, BlockPos pos, Property property, DoubleSupplier getter) {
+        double current = getter.getAsDouble();
 
         String initial = decimalFormat(translations.getLocale(player)).format(current);
 
@@ -89,6 +93,35 @@ public class MarkerConfigurator {
                                 modifyStrength(player, pos, property, strength);
                             }
                         }));
+    }
+
+    public void editElevator(ServerPlayerEntity player, BlockPos pos) {
+        enum Option { STRENGTH, DURATION }
+
+        var title = translations.translateText(player, "pal.edit_elevator.title");
+
+        OptionPrompt.open(player, title, Arrays.asList(Option.values()), option -> switch (option) {
+            case STRENGTH -> {
+                var stack = new ItemStack(Items.GLOWSTONE_DUST);
+                stack.set(DataComponentTypes.ITEM_NAME, translations.translateText(player, "pal.edit_elevator.strength").formatted(AQUA));
+                yield stack;
+            }
+            case DURATION -> {
+                var stack = new ItemStack(Items.REDSTONE);
+                stack.set(DataComponentTypes.ITEM_NAME, translations.translateText(player, "pal.edit_elevator.duration").formatted(AQUA));
+                yield stack;
+            }
+        }).thenAccept(o -> o.ifPresent(opt -> {
+            Property property = switch (opt) {
+                case STRENGTH -> Property.STRENGTH;
+                case DURATION -> Property.DURATION;
+            };
+
+            editStrength(player, pos, property, () -> switch (opt) {
+                case DURATION -> 10;
+                case STRENGTH -> getStrength(player.getWorld(), pos, property);
+            });
+        }));
     }
 
     private void modifyStrength(ServerPlayerEntity player, BlockPos pos, Property property, double strength) {
@@ -161,7 +194,7 @@ public class MarkerConfigurator {
             return 1.0;
         }
 
-        return max(0.0, markerData.strength(property).orElse(1.0));
+        return max(0.0, markerData.value(property).orElse(1.0));
     }
 
     public void setStrength(ServerWorld world, BlockPos pos, Property property, double strength) {
@@ -221,29 +254,36 @@ public class MarkerConfigurator {
         return customData != null && customData.contains(PAL_MARKER_KEY);
     }
 
-    public record Data(Optional<Double> strength, Optional<Double> horizontal, Optional<Double> vertical) {
-
+    public record Data(
+            Optional<Double> strength,
+            Optional<Double> horizontal,
+            Optional<Double> vertical,
+            Optional<Double> duration
+    ) {
         public static final Codec<Data> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 PalCodecs.POSITIVE_DOUBLE.optionalFieldOf(Property.STRENGTH.id()).forGetter(Data::strength),
                 PalCodecs.POSITIVE_DOUBLE.optionalFieldOf(Property.HORIZONTAL_STRENGTH.id()).forGetter(Data::horizontal),
-                PalCodecs.POSITIVE_DOUBLE.optionalFieldOf(Property.VERTICAL_STRENGTH.id()).forGetter(Data::vertical)
+                PalCodecs.POSITIVE_DOUBLE.optionalFieldOf(Property.VERTICAL_STRENGTH.id()).forGetter(Data::vertical),
+                PalCodecs.POSITIVE_DOUBLE.optionalFieldOf(Property.DURATION.id()).forGetter(Data::duration)
         ).apply(instance, Data::new));
 
-        public static final Data DEFAULT = new Data(empty(), empty(), empty());
+        public static final Data DEFAULT = new Data(empty(), empty(), empty(), empty());
 
-        public Optional<Double> strength(Property property) {
+        public Optional<Double> value(Property property) {
             return switch (property) {
                 case STRENGTH -> strength;
                 case HORIZONTAL_STRENGTH -> horizontal;
                 case VERTICAL_STRENGTH -> vertical;
+                case DURATION -> duration;
             };
         }
 
         public Data with(Property property, double value) {
             return switch (property) {
-                case STRENGTH -> new Data(Optional.of(value), horizontal, vertical);
-                case HORIZONTAL_STRENGTH -> new Data(strength, Optional.of(value), vertical);
-                case VERTICAL_STRENGTH -> new Data(strength, horizontal, Optional.of(value));
+                case STRENGTH -> new Data(Optional.of(value), horizontal, vertical, duration);
+                case HORIZONTAL_STRENGTH -> new Data(strength, Optional.of(value), vertical, duration);
+                case VERTICAL_STRENGTH -> new Data(strength, horizontal, Optional.of(value), duration);
+                case DURATION -> new Data(strength, horizontal, vertical, Optional.of(value));
             };
         }
     }
@@ -251,7 +291,8 @@ public class MarkerConfigurator {
     public enum Property {
         STRENGTH,
         HORIZONTAL_STRENGTH,
-        VERTICAL_STRENGTH;
+        VERTICAL_STRENGTH,
+        DURATION;
 
         public String id() {
             return name().toLowerCase(Locale.ROOT);
