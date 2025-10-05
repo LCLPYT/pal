@@ -113,7 +113,7 @@ public class ImageMapCommand implements KibuCommand {
     }
 
     private void giveMaps(BufferedImage image, ServerPlayerEntity player, MapSizes sizes, ImageMode mode) {
-        ServerWorld world = player.getWorld();
+        ServerWorld world = player.getEntityWorld();
         BufferedImage[] parts = ImageManager.getParts(image, sizes, mode);
 
         for (BufferedImage part : parts) {

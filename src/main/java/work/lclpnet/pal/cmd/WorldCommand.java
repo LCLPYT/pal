@@ -116,7 +116,7 @@ public class WorldCommand implements KibuCommand {
     }
 
     private BlockPos findSpawnLocation(ServerWorld world) {
-        BlockPos spawn = world.getSpawnPos();
+        BlockPos spawn = world.getSpawnPoint().getPos();
 
         try {
             Method method = reflectionService.SpawnLocating$findOverworldSpawn();

@@ -161,9 +161,9 @@ public class PlateListener implements HookListenerModule {
     }
 
     private void onJump(ServerPlayerEntity player) {
-        if (!player.isOnGround() || !(player.getWorld() instanceof ServerWorld world)) return;
+        if (!player.isOnGround() || !(player.getEntityWorld() instanceof ServerWorld world)) return;
 
-        Vec3d pos = player.getPos();
+        Vec3d pos = player.getEntityPos();
         var blockPos = new BlockPos.Mutable();
 
         if (config.enablePads && contraptionService.findJumpPad(world, pos, blockPos, PLATFORM_TRIGGER_DIST)) {
@@ -184,9 +184,9 @@ public class PlateListener implements HookListenerModule {
     }
 
     private void onSneak(ServerPlayerEntity player, boolean sneaking) {
-        if (!sneaking || player.getAbilities().flying || !(player.getWorld() instanceof ServerWorld world)) return;
+        if (!sneaking || player.getAbilities().flying || !(player.getEntityWorld() instanceof ServerWorld world)) return;
 
-        Vec3d pos = player.getPos();
+        Vec3d pos = player.getEntityPos();
         var blockPos = new BlockPos.Mutable();
 
         if (config.enableElevators && contraptionService.findElevator(world, pos, blockPos, PLATFORM_TRIGGER_DIST)) {
@@ -286,7 +286,7 @@ public class PlateListener implements HookListenerModule {
 
         scheduler.timeout(() -> padCooldown.remove(uuid), 5);
 
-        player.getWorld().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.BLOCK_PISTON_EXTEND, SoundCategory.BLOCKS, 3, 2);
+        player.getEntityWorld().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.BLOCK_PISTON_EXTEND, SoundCategory.BLOCKS, 3, 2);
     }
 
     private double calculatePadStrength(ServerWorld world, BlockPos.Mutable pos, MarkerConfigurator.Data data, boolean legacy) {
@@ -377,7 +377,7 @@ public class PlateListener implements HookListenerModule {
 
     private boolean hasSpaceOn(World world, ServerPlayerEntity player, BlockPos target) {
         Vec3d pos = new Vec3d(target.getX() + 0.5, target.getY() + 1, target.getZ() + 0.5);
-        Vec3d diff = pos.subtract(player.getPos());
+        Vec3d diff = pos.subtract(player.getEntityPos());
         Box box = player.getBoundingBox().offset(diff);
 
         return StreamSupport.stream(world.getCollisions(null, box).spliterator(), false)

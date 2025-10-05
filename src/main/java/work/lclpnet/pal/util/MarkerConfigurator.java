@@ -1,5 +1,6 @@
 package work.lclpnet.pal.util;
 
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -10,6 +11,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MarkerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -77,7 +79,7 @@ public class MarkerConfigurator {
     }
 
     public void editStrength(ServerPlayerEntity player, BlockPos pos, Property property) {
-        editStrength(player, pos, property, () -> getStrength(player.getWorld(), pos, property));
+        editStrength(player, pos, property, () -> getStrength(player.getEntityWorld(), pos, property));
     }
     public void editStrength(ServerPlayerEntity player, BlockPos pos, Property property, DoubleSupplier getter) {
         double current = getter.getAsDouble();
@@ -119,13 +121,13 @@ public class MarkerConfigurator {
 
             editStrength(player, pos, property, () -> switch (opt) {
                 case DURATION -> 10;
-                case STRENGTH -> getStrength(player.getWorld(), pos, property);
+                case STRENGTH -> getStrength(player.getEntityWorld(), pos, property);
             });
         }));
     }
 
     private void modifyStrength(ServerPlayerEntity player, BlockPos pos, Property property, double strength) {
-        setStrength(player.getWorld(), pos, property, strength);
+        setStrength(player.getEntityWorld(), pos, property, strength);
 
         player.playSoundToPlayer(SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(), SoundCategory.MASTER, 0.5f, 2f);
 
@@ -170,7 +172,10 @@ public class MarkerConfigurator {
 
         if (customData == null) return null;
 
-        return customData.get(PAL_MARKER_CODEC).result().orElse(null);
+        return PAL_MARKER_CODEC.codec().decode(NbtOps.INSTANCE, customData.copyNbt())
+                .resultOrPartial()
+                .map(Pair::getFirst)
+                .orElse(null);
     }
 
     private void setData(MarkerEntity marker, Data data) {
@@ -178,9 +183,10 @@ public class MarkerConfigurator {
 
         if (customData == null) return;
 
-        customData.with(NbtOps.INSTANCE, PAL_MARKER_CODEC, data)
-                .ifSuccess(component -> marker.setComponent(DataComponentTypes.CUSTOM_DATA, component));
-
+        PAL_MARKER_CODEC.codec().encode(data, NbtOps.INSTANCE, customData.copyNbt())
+                .resultOrPartial()
+                .filter(nbt -> nbt instanceof NbtCompound)
+                .ifPresent(nbt -> marker.setComponent(DataComponentTypes.CUSTOM_DATA, NbtComponent.of((NbtCompound) nbt)));
     }
 
     public double getStrength(EntityView world, BlockPos pos, Property property) {
@@ -251,7 +257,7 @@ public class MarkerConfigurator {
 
         NbtComponent customData = marker.get(DataComponentTypes.CUSTOM_DATA);
 
-        return customData != null && customData.contains(PAL_MARKER_KEY);
+        return customData != null && customData.copyNbt().contains(PAL_MARKER_KEY);
     }
 
     public record Data(
