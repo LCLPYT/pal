@@ -14,6 +14,7 @@ import work.lclpnet.kibu.world.mixin.MinecraftServerAccessor;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Iterator;
 import java.util.concurrent.CompletableFuture;
 
 public class PersistentWorldSuggestionProvider implements SuggestionProvider<ServerCommandSource> {
@@ -23,25 +24,37 @@ public class PersistentWorldSuggestionProvider implements SuggestionProvider<Ser
         MinecraftServer server = context.getSource().getServer();
         LevelStorage.Session session = ((MinecraftServerAccessor) server).getSession();
 
-        Path dimDirectory = session.getDirectory(WorldSavePath.ROOT)
-                .resolve("dimensions");
+        Path dimDirectory = session.getDirectory(WorldSavePath.ROOT).resolve("dimensions");
 
-        try (var files = Files.find(dimDirectory, 2,
-                (path, attr) -> dimDirectory.relativize(path).getNameCount() == 2)) {
+        return CompletableFuture.supplyAsync(() -> {
+            try (var files = Files.find(dimDirectory, 16, (path, attr)
+                    -> dimDirectory.relativize(path).getNameCount() >= 2)) {
 
-            files.filter(path -> Files.isRegularFile(path.resolve("level.dat")))
-                    .map(path -> {
-                        Path rel = dimDirectory.relativize(path);
-                        String namespace = rel.getParent().getFileName().toString();
-                        String name = rel.getFileName().toString();
+                files.filter(path -> Files.isRegularFile(path.resolve("level.dat")))
+                        .map(path -> {
+                            Path rel = dimDirectory.relativize(path);
 
-                        Identifier id = Identifier.of(namespace, name);
+                            var it = rel.iterator();
+                            String namespace = it.next().toString();
+                            StringBuilder pathBuilder = new StringBuilder();
 
-                        return id.toString();
-                    }).forEach(builder::suggest);
+                            while (it.hasNext()) {
+                                if (!pathBuilder.isEmpty()) {
+                                    pathBuilder.append('/');
+                                }
 
-        } catch (IOException ignored) {}
+                                pathBuilder.append(it.next());
+                            }
 
-        return builder.buildFuture();
+                            Identifier id = Identifier.of(namespace, pathBuilder.toString());
+
+                            return id.toString();
+                        })
+                        .forEach(builder::suggest);
+
+            } catch (IOException ignored) {}
+
+            return builder.build();
+        });
     }
 }
