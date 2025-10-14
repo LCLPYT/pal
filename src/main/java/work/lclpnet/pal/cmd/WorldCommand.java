@@ -20,10 +20,8 @@ import work.lclpnet.kibu.translate.Translations;
 import work.lclpnet.kibu.translate.text.RootText;
 import work.lclpnet.pal.cmd.arg.WorldSuggestionProvider;
 import work.lclpnet.pal.service.CommandService;
-import work.lclpnet.pal.service.ReflectionService;
 
 import javax.inject.Inject;
-import java.lang.reflect.Method;
 import java.util.Set;
 
 import static work.lclpnet.kibu.translate.text.FormatWrapper.styled;
@@ -31,12 +29,10 @@ import static work.lclpnet.kibu.translate.text.FormatWrapper.styled;
 public class WorldCommand implements KibuCommand {
 
     private final CommandService commandService;
-    private final ReflectionService reflectionService;
 
     @Inject
-    public WorldCommand(CommandService commandService, ReflectionService reflectionService) {
+    public WorldCommand(CommandService commandService) {
         this.commandService = commandService;
-        this.reflectionService = reflectionService;
     }
 
     @Override
@@ -69,10 +65,11 @@ public class WorldCommand implements KibuCommand {
         ServerWorld world = WorldSuggestionProvider.getWorld(ctx, "world", commandService);
         var entities = EntityArgumentType.getEntities(ctx, "entities");
 
-        BlockPos pos = findSpawnLocation(world);
+        var spawnPoint = world.getSpawnPoint();
 
         for (Entity entity : entities) {
-            teleportEntity(entity, world, pos);
+            BlockPos pos = entity.getWorldSpawnPos(world, spawnPoint.getPos());
+            teleportEntity(entity, world, pos, spawnPoint.yaw(), spawnPoint.pitch());
         }
 
         ServerCommandSource source = ctx.getSource();
@@ -101,9 +98,10 @@ public class WorldCommand implements KibuCommand {
         ServerCommandSource source = ctx.getSource();
         ServerPlayerEntity player = source.getPlayerOrThrow();
 
-        BlockPos pos = findSpawnLocation(world);
+        var spawnPoint = world.getSpawnPoint();
+        BlockPos pos = player.getWorldSpawnPos(world, spawnPoint.getPos());
 
-        teleportEntity(player, world, pos);
+        teleportEntity(player, world, pos, spawnPoint.yaw(), spawnPoint.pitch());
 
         Translations translations = commandService.getTranslations();
         Identifier id = world.getRegistryKey().getValue();
@@ -115,25 +113,7 @@ public class WorldCommand implements KibuCommand {
         return 1;
     }
 
-    private BlockPos findSpawnLocation(ServerWorld world) {
-        BlockPos spawn = world.getSpawnPoint().getPos();
-
-        try {
-            Method method = reflectionService.SpawnLocating$findOverworldSpawn();
-
-            Object result = method.invoke(null, world, spawn.getX(), spawn.getZ());
-
-            if (result instanceof BlockPos pos) {
-                return pos;
-            }
-        } catch (Throwable t) {
-            // failed to find Minecraft method, ignore it
-        }
-
-        return spawn;
-    }
-
-    private void teleportEntity(Entity entity, ServerWorld world, BlockPos pos) {
-        entity.teleport(world, pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, Set.of(), 0, 0, true);
+    private void teleportEntity(Entity entity, ServerWorld world, BlockPos pos, float yaw, float pitch) {
+        entity.teleport(world, pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, Set.of(), yaw, pitch, true);
     }
 }
