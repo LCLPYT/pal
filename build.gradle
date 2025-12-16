@@ -53,6 +53,7 @@ dependencies {
     // bundle these dependencies
     include(implementation('work.lclpnet:json-config4j:1.0.0'))
 
+    testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testImplementation 'com.github.romankh3:image-comparison:4.4.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
@@ -88,7 +89,7 @@ java {
 
 [jar, sourcesJar].each {
     it.from("LICENSE") {
-        rename { "${it}_${project.archivesBaseName}" }
+        rename { "${it}_${project.base.archivesName}" }
     }
 }
 
