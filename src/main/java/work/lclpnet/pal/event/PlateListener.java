@@ -278,7 +278,7 @@ public class PlateListener implements HookListenerModule {
         velocity = new Vec3(velocity.x(), amount, velocity.z());
         VelocityModifier.setVelocity(player, velocity);
         player.hurtMarked = true;
-        player.hasImpulse = true;
+        player.needsSync = true;
 
         preventFallDamageOnce(player);
 

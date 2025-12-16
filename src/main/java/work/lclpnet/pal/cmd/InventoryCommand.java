@@ -40,7 +40,7 @@ public class InventoryCommand implements KibuCommand {
 
     private LiteralArgumentBuilder<CommandSourceStack> command(String name) {
         return Commands.literal(name)
-                .requires(s -> s.hasPermission(2))
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .executes(this::ownInventory)
                 .then(Commands.argument("player", EntityArgument.player())
                         .executes(this::targetInventory));

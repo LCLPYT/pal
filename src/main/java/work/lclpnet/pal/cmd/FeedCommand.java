@@ -35,7 +35,7 @@ public class FeedCommand implements KibuCommand {
 
     private LiteralArgumentBuilder<CommandSourceStack> command() {
         return Commands.literal("feed")
-                .requires(s -> s.hasPermission(2))
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .executes(this::feedSelf)
                 .then(Commands.argument("players", EntityArgument.players())
                         .executes(this::feed));

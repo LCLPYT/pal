@@ -5,7 +5,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.core.Holder;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.chunk.ChunkGenerator;
@@ -18,7 +18,7 @@ import xyz.nucleoid.fantasy.util.VoidChunkGenerator;
 public class VoidWorldType implements WorldType {
 
     @Override
-    public ResourceLocation getIdentifier() {
+    public Identifier getIdentifier() {
         return PalMod.identifier("void");
     }
 

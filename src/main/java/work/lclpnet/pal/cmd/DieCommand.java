@@ -34,7 +34,7 @@ public class DieCommand implements KibuCommand {
 
     private LiteralArgumentBuilder<CommandSourceStack> command() {
         return Commands.literal("die")
-                .requires(s -> s.hasPermission(2))
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .executes(this::dieSelf)
                 .then(Commands.argument("entities", EntityArgument.entities())
                         .executes(this::die));

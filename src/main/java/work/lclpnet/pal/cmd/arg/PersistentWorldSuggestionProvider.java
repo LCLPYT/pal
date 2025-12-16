@@ -4,12 +4,11 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.level.storage.LevelStorageSource;
-import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
 import work.lclpnet.kibu.world.mixin.MinecraftServerAccessor;
 
@@ -24,7 +23,7 @@ public class PersistentWorldSuggestionProvider implements SuggestionProvider<Com
     @Override
     public CompletableFuture<Suggestions> getSuggestions(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) {
         MinecraftServer server = context.getSource().getServer();
-        LevelStorageSource.LevelStorageAccess session = ((MinecraftServerAccessor) server).getSession();
+        LevelStorageSource.LevelStorageAccess session = ((MinecraftServerAccessor) server).getStorageSource();
 
         Path dimDirectory = session.getLevelPath(LevelResource.ROOT).resolve("dimensions");
 
@@ -54,7 +53,7 @@ public class PersistentWorldSuggestionProvider implements SuggestionProvider<Com
                             pathBuilder.append(it.next());
                         }
 
-                        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(namespace, pathBuilder.toString());
+                        Identifier id = Identifier.fromNamespaceAndPath(namespace, pathBuilder.toString());
                         builder.suggest(id.toString());
 
                         return FileVisitResult.SKIP_SUBTREE;

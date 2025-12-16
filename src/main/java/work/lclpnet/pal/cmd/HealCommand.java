@@ -37,7 +37,7 @@ public class HealCommand implements KibuCommand {
 
     private LiteralArgumentBuilder<CommandSourceStack> command() {
         return Commands.literal("heal")
-                .requires(s -> s.hasPermission(2))
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .executes(this::healSelf)
                 .then(Commands.argument("entities", EntityArgument.entities())
                         .executes(this::heal));

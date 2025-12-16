@@ -36,7 +36,7 @@ public class FlyCommand implements KibuCommand {
 
     private LiteralArgumentBuilder<CommandSourceStack> command() {
         return Commands.literal("fly")
-                .requires(s -> s.hasPermission(2))
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .executes(this::flySelf)
                 .then(Commands.argument("players", EntityArgument.players())
                         .executes(this::fly));

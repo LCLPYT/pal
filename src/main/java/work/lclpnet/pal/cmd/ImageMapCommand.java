@@ -5,19 +5,20 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.level.saveddata.maps.MapId;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.level.ServerLevel;
 import work.lclpnet.kibu.cmd.type.CommandRegistrar;
 import work.lclpnet.kibu.cmd.type.KibuCommand;
 import work.lclpnet.kibu.map.MapColorUtil;
 import work.lclpnet.kibu.map.MapUtil;
-import work.lclpnet.kibu.map.mixin.MapStateAccessor;
+import work.lclpnet.kibu.map.mixin.MapItemSavedDataAccessor;
 import work.lclpnet.kibu.translate.Translations;
 import work.lclpnet.pal.cmd.arg.ImageSuggestionProvider;
 import work.lclpnet.pal.service.CommandService;
@@ -30,10 +31,10 @@ import java.awt.image.BufferedImage;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-import static net.minecraft.commands.Commands.argument;
-import static net.minecraft.commands.Commands.literal;
 import static net.minecraft.ChatFormatting.RED;
 import static net.minecraft.ChatFormatting.YELLOW;
+import static net.minecraft.commands.Commands.argument;
+import static net.minecraft.commands.Commands.literal;
 import static work.lclpnet.kibu.translate.text.FormatWrapper.styled;
 
 public class ImageMapCommand implements KibuCommand {
@@ -52,7 +53,7 @@ public class ImageMapCommand implements KibuCommand {
     @Override
     public void register(CommandRegistrar registrar) {
         registrar.registerCommand(literal("imagemap")
-                .requires(s -> s.hasPermission(2))
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(argument("image", StringArgumentType.string())
                         .suggests(imageSuggestions)
                         .executes(this::doSimple)
@@ -124,7 +125,7 @@ public class ImageMapCommand implements KibuCommand {
 
             if (mapState == null) throw new IllegalStateException();
 
-            ((MapStateAccessor) mapState).setLocked(true);
+            ((MapItemSavedDataAccessor) mapState).setLocked(true);
 
             byte[] pixels = MapColorUtil.toBytes(part);
             System.arraycopy(pixels, 0, mapState.colors, 0, Math.min(pixels.length, mapState.colors.length));

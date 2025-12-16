@@ -30,7 +30,7 @@ public class SayTextCommand implements KibuCommand {
 
     private CommandFactory<CommandSourceStack> command() {
         return ctx -> Commands.literal("saytext")
-                .requires(s -> s.hasPermission(2))
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.literal("text")
                         .then(Commands.argument("message", ComponentArgument.textComponent(ctx.registryAccess()))
                                 .executes(this::sayText)))

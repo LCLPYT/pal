@@ -4,7 +4,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 import work.lclpnet.pal.world.builtin.PresetWorldType;
 import work.lclpnet.pal.world.builtin.VoidWorldType;
@@ -18,7 +18,7 @@ public class PalWorldTypes {
 
     public static final WorldType VOID = new VoidWorldType();
 
-    private final Map<ResourceLocation, WorldType> customTypes;
+    private final Map<Identifier, WorldType> customTypes;
 
     private PalWorldTypes() {
         customTypes = new HashMap<>();
@@ -27,20 +27,20 @@ public class PalWorldTypes {
     }
 
     public void registerWorldType(WorldType worldType) {
-        ResourceLocation identifier = worldType.getIdentifier();
+        Identifier identifier = worldType.getIdentifier();
         customTypes.put(identifier, worldType);
     }
 
     public void unregisterWorldType(WorldType worldType) {
-        ResourceLocation identifier = worldType.getIdentifier();
+        Identifier identifier = worldType.getIdentifier();
         customTypes.remove(identifier);
     }
 
-    public Set<ResourceLocation> getWorldTypes(MinecraftServer server) {
-        Set<ResourceLocation> identifiers = new HashSet<>();
+    public Set<Identifier> getWorldTypes(MinecraftServer server) {
+        Set<Identifier> identifiers = new HashSet<>();
 
         var serverWorldKeys = server.levelKeys();
-        serverWorldKeys.forEach(key -> identifiers.add(key.location()));
+        serverWorldKeys.forEach(key -> identifiers.add(key.identifier()));
 
         customTypes.forEach((identifier, worldType) -> identifiers.add(identifier));
 
@@ -52,7 +52,7 @@ public class PalWorldTypes {
     }
 
     @Nullable
-    public WorldType getWorldType(MinecraftServer server, ResourceLocation identifier) {
+    public WorldType getWorldType(MinecraftServer server, Identifier identifier) {
         WorldType worldType = customTypes.get(identifier);
 
         if (worldType != null) {

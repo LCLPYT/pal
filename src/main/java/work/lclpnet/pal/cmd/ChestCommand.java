@@ -40,7 +40,7 @@ public class ChestCommand implements KibuCommand {
 
     private LiteralArgumentBuilder<CommandSourceStack> command() {
         return Commands.literal("chest")
-                .requires(s -> s.hasPermission(2))
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .executes(this::ownChest)
                 .then(Commands.argument("player", EntityArgument.player())
                         .executes(this::targetChest));

@@ -5,13 +5,13 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.commands.arguments.ResourceLocationArgument;
+import net.minecraft.commands.arguments.IdentifierArgument;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import work.lclpnet.pal.service.CommandService;
@@ -41,7 +41,7 @@ public class WorldSuggestionProvider implements SuggestionProvider<CommandSource
             if (world == null) continue;
 
             if (predicate.test(world)) {
-                builder.suggest(key.location().toString());
+                builder.suggest(key.identifier().toString());
             }
         }
 
@@ -50,7 +50,7 @@ public class WorldSuggestionProvider implements SuggestionProvider<CommandSource
 
     @NotNull
     public static ServerLevel getWorld(CommandContext<CommandSourceStack> ctx, String name, CommandService commandService) throws CommandSyntaxException {
-        ResourceLocation worldId = ResourceLocationArgument.getId(ctx, name);
+        Identifier worldId = IdentifierArgument.getId(ctx, name);
 
         CommandSourceStack source = ctx.getSource();
         MinecraftServer server = source.getServer();

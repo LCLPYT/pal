@@ -4,7 +4,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.commands.arguments.ResourceLocationArgument;
+import net.minecraft.commands.arguments.IdentifierArgument;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.CommandSourceStack;
@@ -12,7 +12,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.ChatFormatting;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import org.jetbrains.annotations.Nullable;
 import work.lclpnet.kibu.translate.text.FormatWrapper;
@@ -45,28 +45,28 @@ public class RuntimeWorldCommandMaker {
         var worldTypeProvider = new WorldTypeSuggestionProvider();
 
         node.then(Commands.literal("create")
-                        .requires(source -> source.hasPermission(4))
+                        .requires(Commands.hasPermission(Commands.LEVEL_OWNERS))
                         .then(Commands.literal("temporary")
-                                .then(Commands.argument("type", ResourceLocationArgument.id())
+                                .then(Commands.argument("type", IdentifierArgument.id())
                                         .suggests(worldTypeProvider)
                                         .executes(this::createTemporaryWorld)
                                         .then(Commands.argument("seed", StringArgumentType.greedyString())
                                                 .executes(this::createTemporaryWorldSeed))))
                         .then(Commands.literal("persistent")
-                                .then(Commands.argument("id", ResourceLocationArgument.id())
-                                        .then(Commands.argument("type", ResourceLocationArgument.id())
+                                .then(Commands.argument("id", IdentifierArgument.id())
+                                        .then(Commands.argument("type", IdentifierArgument.id())
                                                 .suggests(worldTypeProvider)
                                                 .executes(this::createPersistentWorld)
                                                 .then(Commands.argument("seed", StringArgumentType.greedyString())
                                                         .executes(this::createPersistentWorldSeed))))))
                 .then(Commands.literal("unload")
-                        .requires(source -> source.hasPermission(4))
-                        .then(Commands.argument("world", ResourceLocationArgument.id())
+                        .requires(Commands.hasPermission(Commands.LEVEL_OWNERS))
+                        .then(Commands.argument("world", IdentifierArgument.id())
                                 .suggests(new WorldSuggestionProvider(this::isRuntimeWorld))
                                 .executes(this::unload)))
                 .then(Commands.literal("load")
-                        .requires(source -> source.hasPermission(4))
-                        .then(Commands.argument("id", ResourceLocationArgument.id())
+                        .requires(Commands.hasPermission(Commands.LEVEL_OWNERS))
+                        .then(Commands.argument("id", IdentifierArgument.id())
                                 .suggests(new PersistentWorldSuggestionProvider())
                                 .executes(this::loadPersistentWorld)));
     }
@@ -92,7 +92,7 @@ public class RuntimeWorldCommandMaker {
     }
 
     private int createPersistentWorld(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-        ResourceLocation id = ResourceLocationArgument.getId(ctx, "id");
+        Identifier id = IdentifierArgument.getId(ctx, "id");
         MinecraftServer server = ctx.getSource().getServer();
 
         validateIdentifier(ctx, id);
@@ -101,7 +101,7 @@ public class RuntimeWorldCommandMaker {
     }
 
     private int createPersistentWorldSeed(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-        ResourceLocation id = ResourceLocationArgument.getId(ctx, "id");
+        Identifier id = IdentifierArgument.getId(ctx, "id");
         String seed = StringArgumentType.getString(ctx, "seed");
         MinecraftServer server = ctx.getSource().getServer();
 
@@ -111,7 +111,7 @@ public class RuntimeWorldCommandMaker {
     }
 
     private int loadPersistentWorld(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-        ResourceLocation id = ResourceLocationArgument.getId(ctx, "id");
+        Identifier id = IdentifierArgument.getId(ctx, "id");
 
         validateIdentifier(ctx, id);
 
@@ -130,7 +130,7 @@ public class RuntimeWorldCommandMaker {
         return 1;
     }
 
-    private void validateIdentifier(CommandContext<CommandSourceStack> ctx, ResourceLocation id) throws CommandSyntaxException {
+    private void validateIdentifier(CommandContext<CommandSourceStack> ctx, Identifier id) throws CommandSyntaxException {
         String namespace = id.getNamespace();
 
         if (!PalMod.ID.equals(namespace)) return;
@@ -139,7 +139,7 @@ public class RuntimeWorldCommandMaker {
     }
 
     private int createRuntimeWorld(CommandContext<CommandSourceStack> ctx, @Nullable String seed, Function<RuntimeWorldConfig, RuntimeWorldHandle> factory) throws CommandSyntaxException {
-        ResourceLocation identifier = ResourceLocationArgument.getId(ctx, "type");
+        Identifier identifier = IdentifierArgument.getId(ctx, "type");
 
         MinecraftServer server = ctx.getSource().getServer();
         WorldType worldType = PalWorldTypes.getInstance().getWorldType(server, identifier);
@@ -160,7 +160,7 @@ public class RuntimeWorldCommandMaker {
 
         RuntimeWorldHandle handle = factory.apply(worldConfig);
 
-        ResourceLocation worldId = handle.getRegistryKey().location();
+        Identifier worldId = handle.getRegistryKey().identifier();
         CommandSourceStack source = ctx.getSource();
 
         sendCreationSuccess(worldId, source);
@@ -168,7 +168,7 @@ public class RuntimeWorldCommandMaker {
         return 1;
     }
 
-    private void sendCreationSuccess(ResourceLocation worldId, CommandSourceStack source) {
+    private void sendCreationSuccess(Identifier worldId, CommandSourceStack source) {
         ClickEvent clickEvent = new ClickEvent.RunCommand("/world tp %s".formatted(worldId));
         HoverEvent hoverEvent = new HoverEvent.ShowText(commandService.translateText(source, "pal.cmd.world.create.success.tp_hover")
                 .formatted(ChatFormatting.GREEN));
@@ -197,7 +197,7 @@ public class RuntimeWorldCommandMaker {
 
         optHandle.get().unload();
 
-        ResourceLocation id = world.dimension().location();
+        Identifier id = world.dimension().identifier();
 
         source.sendSystemMessage(commandService.translateText(source, "pal.cmd.world.unload.success",
                 FormatWrapper.styled(id, ChatFormatting.YELLOW)).formatted(ChatFormatting.GREEN));

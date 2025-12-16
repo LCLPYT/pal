@@ -4,7 +4,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 import work.lclpnet.kibu.translate.Translations;
 import work.lclpnet.kibu.translate.text.RootText;
@@ -47,12 +47,12 @@ public class CommandService {
     }
 
     @NotNull
-    public CommandSyntaxException createUnknownWorldException(CommandSourceStack source, ResourceLocation id) {
+    public CommandSyntaxException createUnknownWorldException(CommandSourceStack source, Identifier id) {
         return unknownWorldException.create(key -> translateText(source, key, id));
     }
 
     @NotNull
-    public CommandSyntaxException createUnknownWorldTypeException(CommandSourceStack source, ResourceLocation id) {
+    public CommandSyntaxException createUnknownWorldTypeException(CommandSourceStack source, Identifier id) {
         return unknownWorldTypeException.create(key -> translateText(source, key, id));
     }
 
@@ -62,12 +62,12 @@ public class CommandService {
     }
 
     @NotNull
-    public CommandSyntaxException createReservedWorldIdException(CommandSourceStack source, ResourceLocation id) {
+    public CommandSyntaxException createReservedWorldIdException(CommandSourceStack source, Identifier id) {
         return reservedWorldIdException.create(key -> translateText(source, key, id, id.getNamespace()));
     }
 
     @NotNull
-    public CommandSyntaxException createPersistedWorldFailedToLoadException(CommandSourceStack source, ResourceLocation id) {
+    public CommandSyntaxException createPersistedWorldFailedToLoadException(CommandSourceStack source, Identifier id) {
         return persistedWorldFailedToLoadException.create(key -> translateText(source, key, id));
     }
 

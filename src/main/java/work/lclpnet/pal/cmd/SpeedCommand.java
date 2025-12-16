@@ -41,7 +41,7 @@ public class SpeedCommand implements KibuCommand {
 
     private LiteralArgumentBuilder<CommandSourceStack> command() {
         return Commands.literal("speed")
-                .requires(s -> s.hasPermission(2))
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.literal("set")
                         .then(Commands.argument("speed", FloatArgumentType.floatArg(-1f, 5))
                                 .executes(this::modifySpeedSelf)

@@ -5,14 +5,14 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.commands.arguments.ResourceLocationArgument;
+import net.minecraft.commands.arguments.IdentifierArgument;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.ChatFormatting;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.core.BlockPos;
 import work.lclpnet.kibu.cmd.type.CommandRegistrar;
 import work.lclpnet.kibu.cmd.type.KibuCommand;
@@ -42,9 +42,9 @@ public class WorldCommand implements KibuCommand {
 
     private LiteralArgumentBuilder<CommandSourceStack> command() {
         var node = Commands.literal("world")
-                .requires(source -> source.hasPermission(2))
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.literal("tp")
-                        .then(Commands.argument("world", ResourceLocationArgument.id())
+                        .then(Commands.argument("world", IdentifierArgument.id())
                                 .suggests(new WorldSuggestionProvider())
                                 .executes(this::teleportSelf)
                                 .then(Commands.argument("entities", EntityArgument.entities())
@@ -80,11 +80,11 @@ public class WorldCommand implements KibuCommand {
         if (count == 1) {
             msg = commandService.translateText(source, "pal.cmd.world.teleport.single",
                     styled(entities.iterator().next().getScoreboardName()).formatted(ChatFormatting.YELLOW),
-                    styled(world.dimension().location()).formatted(ChatFormatting.YELLOW));
+                    styled(world.dimension().identifier()).formatted(ChatFormatting.YELLOW));
         } else {
             msg = commandService.translateText(source, "pal.cmd.world.teleport.multiple",
                     styled(count).formatted(ChatFormatting.YELLOW),
-                    styled(world.dimension().location()).formatted(ChatFormatting.YELLOW));
+                    styled(world.dimension().identifier()).formatted(ChatFormatting.YELLOW));
         }
 
         source.sendSystemMessage(msg.formatted(ChatFormatting.GREEN));
@@ -104,7 +104,7 @@ public class WorldCommand implements KibuCommand {
         teleportEntity(player, world, pos, spawnPoint.yaw(), spawnPoint.pitch());
 
         Translations translations = commandService.getTranslations();
-        ResourceLocation id = world.dimension().location();
+        Identifier id = world.dimension().identifier();
 
         source.sendSystemMessage(translations.translateText(source, "pal.cmd.world.teleport.single",
                 styled(player.getScoreboardName(), ChatFormatting.YELLOW),

@@ -41,7 +41,7 @@ public class RenameCommand implements KibuCommand {
 
     private CommandFactory<CommandSourceStack> command() {
         return ctx -> Commands.literal("rename")
-                .requires(s -> s.hasPermission(2))
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.argument("target", EntityArgument.player())
                         .then(Commands.literal("text")
                                 .then(Commands.argument("text", ComponentArgument.textComponent(ctx.registryAccess()))

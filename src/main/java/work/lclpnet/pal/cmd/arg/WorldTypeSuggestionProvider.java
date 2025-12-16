@@ -6,7 +6,7 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import work.lclpnet.pal.world.PalWorldTypes;
 
 import java.util.concurrent.CompletableFuture;
@@ -20,7 +20,7 @@ public class WorldTypeSuggestionProvider implements SuggestionProvider<CommandSo
         PalWorldTypes.getInstance()
                 .getWorldTypes(server)
                 .stream()
-                .map(ResourceLocation::toString)
+                .map(Identifier::toString)
                 .forEach(builder::suggest);
 
         return builder.buildFuture();
