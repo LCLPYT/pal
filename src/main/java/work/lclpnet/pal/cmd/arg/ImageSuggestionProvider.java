@@ -5,7 +5,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;
@@ -15,7 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 
-public class ImageSuggestionProvider implements SuggestionProvider<ServerCommandSource> {
+public class ImageSuggestionProvider implements SuggestionProvider<CommandSourceStack> {
 
     private final Path path;
     private final Logger logger;
@@ -27,7 +27,7 @@ public class ImageSuggestionProvider implements SuggestionProvider<ServerCommand
     }
 
     @Override
-    public CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder) throws CommandSyntaxException {
+    public CompletableFuture<Suggestions> getSuggestions(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) throws CommandSyntaxException {
         return CompletableFuture.supplyAsync(() -> {
             if (!Files.isDirectory(path)) {
                 return builder.build();

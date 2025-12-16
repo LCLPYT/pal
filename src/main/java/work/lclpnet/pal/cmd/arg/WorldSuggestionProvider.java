@@ -5,43 +5,43 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.command.argument.IdentifierArgumentType;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
+import net.minecraft.commands.arguments.ResourceLocationArgument;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import work.lclpnet.pal.service.CommandService;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
-public class WorldSuggestionProvider implements SuggestionProvider<ServerCommandSource> {
+public class WorldSuggestionProvider implements SuggestionProvider<CommandSourceStack> {
 
-    private final Predicate<ServerWorld> predicate;
+    private final Predicate<ServerLevel> predicate;
 
     public WorldSuggestionProvider() {
         this(world -> true);
     }
 
-    public WorldSuggestionProvider(Predicate<ServerWorld> predicate) {
+    public WorldSuggestionProvider(Predicate<ServerLevel> predicate) {
         this.predicate = predicate;
     }
 
     @Override
-    public CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder) {
+    public CompletableFuture<Suggestions> getSuggestions(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) {
         MinecraftServer server = context.getSource().getServer();
         if (server == null) return builder.buildFuture();
 
-        for (var key : server.getWorldRegistryKeys()) {
-            ServerWorld world = server.getWorld(key);
+        for (var key : server.levelKeys()) {
+            ServerLevel world = server.getLevel(key);
             if (world == null) continue;
 
             if (predicate.test(world)) {
-                builder.suggest(key.getValue().toString());
+                builder.suggest(key.location().toString());
             }
         }
 
@@ -49,15 +49,15 @@ public class WorldSuggestionProvider implements SuggestionProvider<ServerCommand
     }
 
     @NotNull
-    public static ServerWorld getWorld(CommandContext<ServerCommandSource> ctx, String name, CommandService commandService) throws CommandSyntaxException {
-        Identifier worldId = IdentifierArgumentType.getIdentifier(ctx, name);
+    public static ServerLevel getWorld(CommandContext<CommandSourceStack> ctx, String name, CommandService commandService) throws CommandSyntaxException {
+        ResourceLocation worldId = ResourceLocationArgument.getId(ctx, name);
 
-        ServerCommandSource source = ctx.getSource();
+        CommandSourceStack source = ctx.getSource();
         MinecraftServer server = source.getServer();
 
-        RegistryKey<World> key = RegistryKey.of(RegistryKeys.WORLD, worldId);
+        ResourceKey<Level> key = ResourceKey.create(Registries.DIMENSION, worldId);
 
-        ServerWorld world = server.getWorld(key);
+        ServerLevel world = server.getLevel(key);
 
         if (world == null) {
             throw commandService.createUnknownWorldException(source, worldId);

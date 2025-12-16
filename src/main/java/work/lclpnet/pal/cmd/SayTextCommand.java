@@ -2,11 +2,11 @@ package work.lclpnet.pal.cmd;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.command.argument.TextArgumentType;
-import net.minecraft.server.PlayerManager;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
+import net.minecraft.commands.arguments.ComponentArgument;
+import net.minecraft.server.players.PlayerList;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
 import work.lclpnet.kibu.cmd.type.CommandFactory;
 import work.lclpnet.kibu.cmd.type.CommandRegistrar;
 import work.lclpnet.kibu.cmd.type.KibuCommand;
@@ -28,36 +28,36 @@ public class SayTextCommand implements KibuCommand {
         registrar.registerCommand(command());
     }
 
-    private CommandFactory<ServerCommandSource> command() {
-        return ctx -> CommandManager.literal("saytext")
-                .requires(s -> s.hasPermissionLevel(2))
-                .then(CommandManager.literal("text")
-                        .then(CommandManager.argument("message", TextArgumentType.text(ctx.registryAccess()))
+    private CommandFactory<CommandSourceStack> command() {
+        return ctx -> Commands.literal("saytext")
+                .requires(s -> s.hasPermission(2))
+                .then(Commands.literal("text")
+                        .then(Commands.argument("message", ComponentArgument.textComponent(ctx.registryAccess()))
                                 .executes(this::sayText)))
-                .then(CommandManager.literal("string")
-                        .then(CommandManager.argument("message", StringArgumentType.greedyString())
+                .then(Commands.literal("string")
+                        .then(Commands.argument("message", StringArgumentType.greedyString())
                                 .executes(this::sayString)));
     }
 
-    private int sayString(CommandContext<ServerCommandSource> ctx) {
+    private int sayString(CommandContext<CommandSourceStack> ctx) {
         String str = StringArgumentType.getString(ctx, "message");
-        Text text = formattingService.parseText(str, '&');
+        Component text = formattingService.parseText(str, '&');
 
         broadcast(ctx.getSource(), text);
 
         return 1;
     }
 
-    private int sayText(CommandContext<ServerCommandSource> ctx) {
-        Text text = TextArgumentType.getTextArgument(ctx, "message");
+    private int sayText(CommandContext<CommandSourceStack> ctx) {
+        Component text = ComponentArgument.getRawComponent(ctx, "message");
 
         broadcast(ctx.getSource(), text);
 
         return 1;
     }
 
-    private void broadcast(ServerCommandSource source, Text msg) {
-        PlayerManager playerManager = source.getServer().getPlayerManager();
-        playerManager.broadcast(msg, false);
+    private void broadcast(CommandSourceStack source, Component msg) {
+        PlayerList playerManager = source.getServer().getPlayerList();
+        playerManager.broadcastSystemMessage(msg, false);
     }
 }

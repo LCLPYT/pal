@@ -5,14 +5,14 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.MapIdComponent;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.map.MapState;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.level.saveddata.maps.MapId;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
 import work.lclpnet.kibu.cmd.type.CommandRegistrar;
 import work.lclpnet.kibu.cmd.type.KibuCommand;
 import work.lclpnet.kibu.map.MapColorUtil;
@@ -30,10 +30,10 @@ import java.awt.image.BufferedImage;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-import static net.minecraft.server.command.CommandManager.argument;
-import static net.minecraft.server.command.CommandManager.literal;
-import static net.minecraft.util.Formatting.RED;
-import static net.minecraft.util.Formatting.YELLOW;
+import static net.minecraft.commands.Commands.argument;
+import static net.minecraft.commands.Commands.literal;
+import static net.minecraft.ChatFormatting.RED;
+import static net.minecraft.ChatFormatting.YELLOW;
 import static work.lclpnet.kibu.translate.text.FormatWrapper.styled;
 
 public class ImageMapCommand implements KibuCommand {
@@ -52,7 +52,7 @@ public class ImageMapCommand implements KibuCommand {
     @Override
     public void register(CommandRegistrar registrar) {
         registrar.registerCommand(literal("imagemap")
-                .requires(s -> s.hasPermissionLevel(2))
+                .requires(s -> s.hasPermission(2))
                 .then(argument("image", StringArgumentType.string())
                         .suggests(imageSuggestions)
                         .executes(this::doSimple)
@@ -65,8 +65,8 @@ public class ImageMapCommand implements KibuCommand {
                                         .executes(ctx -> doSizes(ctx, ImageMode.CROP))))));
     }
 
-    private int doSimple(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        ServerPlayerEntity player = ctx.getSource().getPlayerOrThrow();
+    private int doSimple(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
         String name = StringArgumentType.getString(ctx, "image");
 
         loadImageAndDo(player, name, image -> giveMaps(image, player, new MapSizes(1, 1), ImageMode.MATCH));
@@ -74,29 +74,29 @@ public class ImageMapCommand implements KibuCommand {
         return 1;
     }
 
-    private int doSizes(CommandContext<ServerCommandSource> ctx, ImageMode mode) throws CommandSyntaxException {
-        ServerCommandSource source = ctx.getSource();
+    private int doSizes(CommandContext<CommandSourceStack> ctx, ImageMode mode) throws CommandSyntaxException {
+        CommandSourceStack source = ctx.getSource();
         String name = StringArgumentType.getString(ctx, "image");
         MapSizes sizes = parseSizes(source, StringArgumentType.getString(ctx, "sizes"));
 
-        ServerPlayerEntity player = source.getPlayerOrThrow();
+        ServerPlayer player = source.getPlayerOrException();
 
         loadImageAndDo(player, name, image -> giveMaps(image, player, sizes, mode));
 
         return 1;
     }
 
-    private void loadImageAndDo(ServerPlayerEntity player, String name, Consumer<BufferedImage> action) {
+    private void loadImageAndDo(ServerPlayer player, String name, Consumer<BufferedImage> action) {
         Translations translations = commandService.getTranslations();
 
         imageManager.getSource(name)
                 .thenApply(s -> {
-                    player.sendMessage(translations.translateText(player, "pal.cmd.imagemap.processing"));
+                    player.sendSystemMessage(translations.translateText(player, "pal.cmd.imagemap.processing"));
                     return s;
                 })
                 .thenCompose(imageManager::loadImage)
                 .exceptionally(error -> {
-                    player.sendMessage(translations.translateText(player, "pal.cmd.imagemap.not_found", styled(name, YELLOW))
+                    player.sendSystemMessage(translations.translateText(player, "pal.cmd.imagemap.not_found", styled(name, YELLOW))
                             .formatted(RED));
                     return null;
                 })
@@ -106,21 +106,21 @@ public class ImageMapCommand implements KibuCommand {
                     }
                 })
                 .exceptionally(error -> {
-                    player.sendMessage(translations.translateText(player, "pal.cmd.imagemap.error")
+                    player.sendSystemMessage(translations.translateText(player, "pal.cmd.imagemap.error")
                             .formatted(RED));
                     return null;
                 });
     }
 
-    private void giveMaps(BufferedImage image, ServerPlayerEntity player, MapSizes sizes, ImageMode mode) {
-        ServerWorld world = player.getEntityWorld();
+    private void giveMaps(BufferedImage image, ServerPlayer player, MapSizes sizes, ImageMode mode) {
+        ServerLevel world = player.level();
         BufferedImage[] parts = ImageManager.getParts(image, sizes, mode);
 
         for (BufferedImage part : parts) {
             ItemStack stack = new ItemStack(Items.FILLED_MAP);
 
-            MapIdComponent id = MapUtil.allocateMapId(world, 0, 0, 0, false, false, world.getRegistryKey());
-            MapState mapState = world.getMapState(id);
+            MapId id = MapUtil.allocateMapId(world, 0, 0, 0, false, false, world.dimension());
+            MapItemSavedData mapState = world.getMapData(id);
 
             if (mapState == null) throw new IllegalStateException();
 
@@ -129,17 +129,17 @@ public class ImageMapCommand implements KibuCommand {
             byte[] pixels = MapColorUtil.toBytes(part);
             System.arraycopy(pixels, 0, mapState.colors, 0, Math.min(pixels.length, mapState.colors.length));
 
-            stack.set(DataComponentTypes.MAP_ID, id);
+            stack.set(DataComponents.MAP_ID, id);
 
-            player.giveItemStack(stack);
+            player.addItem(stack);
         }
     }
 
-    private CompletableFuture<Suggestions> suggestSizes(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder) {
+    private CompletableFuture<Suggestions> suggestSizes(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) {
         return builder.suggest("1x1").suggest("2x2").suggest("2x1").buildFuture();
     }
 
-    private MapSizes parseSizes(ServerCommandSource source, String src) throws CommandSyntaxException {
+    private MapSizes parseSizes(CommandSourceStack source, String src) throws CommandSyntaxException {
         String[] parts = src.split("x");
 
         if (parts.length != 2) throw commandService.createInvalidMapSizesException(source);

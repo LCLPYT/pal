@@ -4,14 +4,14 @@ import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.entity.attribute.EntityAttributeInstance;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.player.PlayerAbilities;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Formatting;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.player.Abilities;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.ChatFormatting;
 import work.lclpnet.kibu.cmd.type.CommandRegistrar;
 import work.lclpnet.kibu.cmd.type.KibuCommand;
 import work.lclpnet.kibu.translate.text.RootText;
@@ -39,64 +39,64 @@ public class SpeedCommand implements KibuCommand {
         registrar.registerCommand(command());
     }
 
-    private LiteralArgumentBuilder<ServerCommandSource> command() {
-        return CommandManager.literal("speed")
-                .requires(s -> s.hasPermissionLevel(2))
-                .then(CommandManager.literal("set")
-                        .then(CommandManager.argument("speed", FloatArgumentType.floatArg(-1f, 5))
+    private LiteralArgumentBuilder<CommandSourceStack> command() {
+        return Commands.literal("speed")
+                .requires(s -> s.hasPermission(2))
+                .then(Commands.literal("set")
+                        .then(Commands.argument("speed", FloatArgumentType.floatArg(-1f, 5))
                                 .executes(this::modifySpeedSelf)
-                                .then(CommandManager.literal("walk")
+                                .then(Commands.literal("walk")
                                         .executes(ctx -> modifySpeedSelf(ctx, TYPE_WALK))
-                                        .then(CommandManager.argument("players", EntityArgumentType.players())
+                                        .then(Commands.argument("players", EntityArgument.players())
                                                 .executes(ctx -> modifySpeedOther(ctx, TYPE_WALK))))
-                                .then(CommandManager.literal("fly")
+                                .then(Commands.literal("fly")
                                         .executes(ctx -> modifySpeedSelf(ctx, TYPE_FLY))
-                                        .then(CommandManager.argument("players", EntityArgumentType.players())
+                                        .then(Commands.argument("players", EntityArgument.players())
                                                 .executes(ctx -> modifySpeedOther(ctx, TYPE_FLY))))))
-                .then(CommandManager.literal("reset")
+                .then(Commands.literal("reset")
                         .executes(this::resetSpeedSelf)
-                        .then(CommandManager.literal("all")
+                        .then(Commands.literal("all")
                                 .executes(ctx -> resetSpeedSelf(ctx, TYPE_BOTH))
-                                .then(CommandManager.argument("players", EntityArgumentType.players())
+                                .then(Commands.argument("players", EntityArgument.players())
                                         .executes(ctx -> resetSpeedOther(ctx, TYPE_BOTH))))
-                        .then(CommandManager.literal("walk")
+                        .then(Commands.literal("walk")
                                 .executes(ctx -> resetSpeedSelf(ctx, TYPE_WALK))
-                                .then(CommandManager.argument("players", EntityArgumentType.players())
+                                .then(Commands.argument("players", EntityArgument.players())
                                         .executes(ctx -> resetSpeedOther(ctx, TYPE_WALK))))
-                        .then(CommandManager.literal("fly")
+                        .then(Commands.literal("fly")
                                 .executes(ctx -> resetSpeedSelf(ctx, TYPE_FLY))
-                                .then(CommandManager.argument("players", EntityArgumentType.players())
+                                .then(Commands.argument("players", EntityArgument.players())
                                         .executes(ctx -> resetSpeedOther(ctx, TYPE_FLY)))));
     }
 
-    private int modifySpeedSelf(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
+    private int modifySpeedSelf(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         return modifySpeedSelf(ctx, getType(ctx));
     }
 
-    private int modifySpeedSelf(CommandContext<ServerCommandSource> ctx, int type) throws CommandSyntaxException {
+    private int modifySpeedSelf(CommandContext<CommandSourceStack> ctx, int type) throws CommandSyntaxException {
         float value = FloatArgumentType.getFloat(ctx, "speed");
-        ServerPlayerEntity player = ctx.getSource().getPlayerOrThrow();
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
 
         return modifySpeedOf(ctx, type, List.of(player), value);
     }
 
-    private int modifySpeedOther(CommandContext<ServerCommandSource> ctx, int type) throws CommandSyntaxException {
-        var players = EntityArgumentType.getPlayers(ctx, "players");
+    private int modifySpeedOther(CommandContext<CommandSourceStack> ctx, int type) throws CommandSyntaxException {
+        var players = EntityArgument.getPlayers(ctx, "players");
         float value = FloatArgumentType.getFloat(ctx, "speed");
 
         return modifySpeedOf(ctx, type, players, value);
     }
 
-    private int modifySpeedOf(CommandContext<ServerCommandSource> ctx, int type, Collection<ServerPlayerEntity> players, float value) {
+    private int modifySpeedOf(CommandContext<CommandSourceStack> ctx, int type, Collection<ServerPlayer> players, float value) {
         boolean walk = (type & TYPE_WALK) == TYPE_WALK;
         boolean fly = (type & TYPE_FLY) == TYPE_FLY;
 
-        for (ServerPlayerEntity player : players) {
-            PlayerAbilities abilities = player.getAbilities();
+        for (ServerPlayer player : players) {
+            Abilities abilities = player.getAbilities();
 
             if (walk) {
-                abilities.setWalkSpeed(value);
-                EntityAttributeInstance attribute = player.getAttributeInstance(EntityAttributes.MOVEMENT_SPEED);
+                abilities.setWalkingSpeed(value);
+                AttributeInstance attribute = player.getAttribute(Attributes.MOVEMENT_SPEED);
 
                 if (attribute != null) {
                     attribute.setBaseValue(value);
@@ -104,18 +104,18 @@ public class SpeedCommand implements KibuCommand {
             }
 
             if (fly) {
-                abilities.setFlySpeed(value);
+                abilities.setFlyingSpeed(value);
             }
 
-            player.sendAbilitiesUpdate();
+            player.onUpdateAbilities();
         }
 
-        ServerCommandSource source = ctx.getSource();
+        CommandSourceStack source = ctx.getSource();
 
         return sendModifiedMessage(players, value, walk, source);
     }
 
-    private int sendModifiedMessage(Collection<ServerPlayerEntity> players, float value, boolean walk, ServerCommandSource source) {
+    private int sendModifiedMessage(Collection<ServerPlayer> players, float value, boolean walk, CommandSourceStack source) {
         RootText msg;
 
         final int count = players.size();
@@ -123,45 +123,45 @@ public class SpeedCommand implements KibuCommand {
 
         if (count == 1) {
             msg = commandService.translateText(source, "pal.cmd.speed.%s.set.single".formatted(typeStr),
-                    styled(players.iterator().next().getNameForScoreboard()).formatted(Formatting.YELLOW),
-                    styled(value).formatted(Formatting.YELLOW));
+                    styled(players.iterator().next().getScoreboardName()).formatted(ChatFormatting.YELLOW),
+                    styled(value).formatted(ChatFormatting.YELLOW));
         } else {
             msg = commandService.translateText(source, "pal.cmd.speed.%s.set.multiple".formatted(typeStr),
-                    styled(count).formatted(Formatting.YELLOW),
-                    styled(value).formatted(Formatting.YELLOW));
+                    styled(count).formatted(ChatFormatting.YELLOW),
+                    styled(value).formatted(ChatFormatting.YELLOW));
         }
 
-        source.sendMessage(msg.formatted(Formatting.GREEN));
+        source.sendSystemMessage(msg.formatted(ChatFormatting.GREEN));
 
         return count;
     }
 
-    private int resetSpeedSelf(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
+    private int resetSpeedSelf(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         return resetSpeedSelf(ctx, getType(ctx));
     }
 
-    private int resetSpeedSelf(CommandContext<ServerCommandSource> ctx, int type) throws CommandSyntaxException {
-        ServerPlayerEntity player = ctx.getSource().getPlayerOrThrow();
+    private int resetSpeedSelf(CommandContext<CommandSourceStack> ctx, int type) throws CommandSyntaxException {
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
         return resetSpeedOf(ctx, type, List.of(player));
     }
 
-    private int resetSpeedOther(CommandContext<ServerCommandSource> ctx, int type) throws CommandSyntaxException {
-        var players = EntityArgumentType.getPlayers(ctx, "players");
+    private int resetSpeedOther(CommandContext<CommandSourceStack> ctx, int type) throws CommandSyntaxException {
+        var players = EntityArgument.getPlayers(ctx, "players");
 
         return resetSpeedOf(ctx, type, players);
     }
 
-    private int resetSpeedOf(CommandContext<ServerCommandSource> ctx, int type, Collection<ServerPlayerEntity> players) {
+    private int resetSpeedOf(CommandContext<CommandSourceStack> ctx, int type, Collection<ServerPlayer> players) {
         boolean walk = (type & TYPE_WALK) == TYPE_WALK;
         boolean fly = (type & TYPE_FLY) == TYPE_FLY;
 
-        for (ServerPlayerEntity player : players) {
-            PlayerAbilities abilities = player.getAbilities();
+        for (ServerPlayer player : players) {
+            Abilities abilities = player.getAbilities();
 
             if (walk) {
-                abilities.setWalkSpeed(0.1f);
+                abilities.setWalkingSpeed(0.1f);
 
-                EntityAttributeInstance attribute = player.getAttributeInstance(EntityAttributes.MOVEMENT_SPEED);
+                AttributeInstance attribute = player.getAttribute(Attributes.MOVEMENT_SPEED);
 
                 if (attribute != null) {
                     attribute.setBaseValue(0.1f);
@@ -169,13 +169,13 @@ public class SpeedCommand implements KibuCommand {
             }
 
             if (fly) {
-                abilities.setFlySpeed(0.05f);
+                abilities.setFlyingSpeed(0.05f);
             }
 
-            player.sendAbilitiesUpdate();
+            player.onUpdateAbilities();
         }
 
-        final ServerCommandSource source = ctx.getSource();
+        final CommandSourceStack source = ctx.getSource();
 
         if ((type & TYPE_BOTH) == TYPE_BOTH) {
             RootText msg;
@@ -184,13 +184,13 @@ public class SpeedCommand implements KibuCommand {
 
             if (count == 1) {
                 msg = commandService.translateText(source, "pal.cmd.speed.all.reset.single",
-                        styled(players.iterator().next().getNameForScoreboard()).formatted(Formatting.YELLOW));
+                        styled(players.iterator().next().getScoreboardName()).formatted(ChatFormatting.YELLOW));
             } else {
                 msg = commandService.translateText(source, "pal.cmd.speed.all.reset.multiple",
-                        styled(count).formatted(Formatting.YELLOW));
+                        styled(count).formatted(ChatFormatting.YELLOW));
             }
 
-            source.sendMessage(msg.formatted(Formatting.GREEN));
+            source.sendSystemMessage(msg.formatted(ChatFormatting.GREEN));
 
             return count;
         }
@@ -198,8 +198,8 @@ public class SpeedCommand implements KibuCommand {
         return sendModifiedMessage(players, walk ? 0.1f : 0.05f, walk, source);
     }
 
-    private static int getType(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        ServerPlayerEntity player = ctx.getSource().getPlayerOrThrow();
+    private static int getType(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
         return player.getAbilities().flying ? TYPE_FLY : TYPE_WALK;
     }
 }

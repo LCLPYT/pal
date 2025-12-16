@@ -1,14 +1,14 @@
 package work.lclpnet.pal.world.builtin;
 
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.core.Holder;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.BiomeKeys;
-import net.minecraft.world.gen.chunk.ChunkGenerator;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.Biomes;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import work.lclpnet.pal.PalMod;
 import work.lclpnet.pal.world.WorldCreationContext;
 import work.lclpnet.pal.world.WorldType;
@@ -18,7 +18,7 @@ import xyz.nucleoid.fantasy.util.VoidChunkGenerator;
 public class VoidWorldType implements WorldType {
 
     @Override
-    public Identifier getIdentifier() {
+    public ResourceLocation getIdentifier() {
         return PalMod.identifier("void");
     }
 
@@ -26,14 +26,14 @@ public class VoidWorldType implements WorldType {
     public void configure(WorldCreationContext context, RuntimeWorldConfig config) {
         MinecraftServer server = context.getServer();
 
-        Registry<Biome> biomeRegistry = server.getRegistryManager().getOrThrow(RegistryKeys.BIOME);
-        RegistryEntry.Reference<Biome> biomeReference = biomeRegistry.getOptional(BiomeKeys.THE_VOID).orElseThrow();
+        Registry<Biome> biomeRegistry = server.registryAccess().lookupOrThrow(Registries.BIOME);
+        Holder.Reference<Biome> biomeReference = biomeRegistry.get(Biomes.THE_VOID).orElseThrow();
 
         ChunkGenerator generator = new VoidChunkGenerator(biomeReference);
         config.setGenerator(generator);
         config.setFlat(true);
 
-        ServerWorld overworld = server.getOverworld();
-        config.setDimensionType(overworld.getDimensionEntry());
+        ServerLevel overworld = server.overworld();
+        config.setDimensionType(overworld.dimensionTypeRegistration());
     }
 }

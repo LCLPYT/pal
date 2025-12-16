@@ -5,10 +5,10 @@ import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.WorldSavePath;
-import net.minecraft.world.level.storage.LevelStorage;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.storage.LevelResource;
+import net.minecraft.world.level.storage.LevelStorageSource;
 import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
 import work.lclpnet.kibu.world.mixin.MinecraftServerAccessor;
@@ -19,14 +19,14 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.EnumSet;
 import java.util.concurrent.CompletableFuture;
 
-public class PersistentWorldSuggestionProvider implements SuggestionProvider<ServerCommandSource> {
+public class PersistentWorldSuggestionProvider implements SuggestionProvider<CommandSourceStack> {
 
     @Override
-    public CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder) {
+    public CompletableFuture<Suggestions> getSuggestions(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) {
         MinecraftServer server = context.getSource().getServer();
-        LevelStorage.Session session = ((MinecraftServerAccessor) server).getSession();
+        LevelStorageSource.LevelStorageAccess session = ((MinecraftServerAccessor) server).getSession();
 
-        Path dimDirectory = session.getDirectory(WorldSavePath.ROOT).resolve("dimensions");
+        Path dimDirectory = session.getLevelPath(LevelResource.ROOT).resolve("dimensions");
 
         return CompletableFuture.supplyAsync(() -> {
             try {
@@ -54,7 +54,7 @@ public class PersistentWorldSuggestionProvider implements SuggestionProvider<Ser
                             pathBuilder.append(it.next());
                         }
 
-                        Identifier id = Identifier.of(namespace, pathBuilder.toString());
+                        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(namespace, pathBuilder.toString());
                         builder.suggest(id.toString());
 
                         return FileVisitResult.SKIP_SUBTREE;

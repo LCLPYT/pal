@@ -3,18 +3,18 @@ package work.lclpnet.pal.cmd;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.command.argument.TextArgumentType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.ComponentArgument;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.InteractionHand;
 import work.lclpnet.kibu.cmd.type.CommandFactory;
 import work.lclpnet.kibu.cmd.type.CommandRegistrar;
 import work.lclpnet.kibu.cmd.type.KibuCommand;
@@ -39,49 +39,49 @@ public class RenameCommand implements KibuCommand {
         registrar.registerCommand(command());
     }
 
-    private CommandFactory<ServerCommandSource> command() {
-        return ctx -> CommandManager.literal("rename")
-                .requires(s -> s.hasPermissionLevel(2))
-                .then(CommandManager.argument("target", EntityArgumentType.player())
-                        .then(CommandManager.literal("text")
-                                .then(CommandManager.argument("text", TextArgumentType.text(ctx.registryAccess()))
+    private CommandFactory<CommandSourceStack> command() {
+        return ctx -> Commands.literal("rename")
+                .requires(s -> s.hasPermission(2))
+                .then(Commands.argument("target", EntityArgument.player())
+                        .then(Commands.literal("text")
+                                .then(Commands.argument("text", ComponentArgument.textComponent(ctx.registryAccess()))
                                         .executes(this::renameText)))
-                        .then(CommandManager.literal("string")
-                                .then(CommandManager.argument("string", StringArgumentType.greedyString())
+                        .then(Commands.literal("string")
+                                .then(Commands.argument("string", StringArgumentType.greedyString())
                                         .executes(this::renameString))));
     }
 
-    private int renameText(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "target");
-        Text text = TextArgumentType.getTextArgument(ctx, "text");
+    private int renameText(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer player = EntityArgument.getPlayer(ctx, "target");
+        Component text = ComponentArgument.getRawComponent(ctx, "text");
 
         return renameTo(ctx, player, text);
     }
 
-    private int renameString(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "target");
+    private int renameString(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer player = EntityArgument.getPlayer(ctx, "target");
         String string = StringArgumentType.getString(ctx, "string");
 
-        Text name = formattingService.parseText(string, '&');
+        Component name = formattingService.parseText(string, '&');
 
         return renameTo(ctx, player, name);
     }
 
-    private int renameTo(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity player, Text name) {
-        ItemStack stack = player.getStackInHand(Hand.MAIN_HAND);
+    private int renameTo(CommandContext<CommandSourceStack> ctx, ServerPlayer player, Component name) {
+        ItemStack stack = player.getItemInHand(InteractionHand.MAIN_HAND);
 
-        ServerCommandSource src = ctx.getSource();
+        CommandSourceStack src = ctx.getSource();
         boolean self = src.getPlayer() == player;
 
         if (stack.isEmpty()) {
-            src.sendMessage(commandService.translateText(src, self ? "pal.cmd.rename.no_item.self" : "pal.cmd.rename.no_item").formatted(Formatting.RED));
+            src.sendSystemMessage(commandService.translateText(src, self ? "pal.cmd.rename.no_item.self" : "pal.cmd.rename.no_item").formatted(ChatFormatting.RED));
             return 0;
         }
 
-        stack.set(DataComponentTypes.CUSTOM_NAME, name.copy().setStyle(name.getStyle().withParent(Style.EMPTY.withItalic(false))));
+        stack.set(DataComponents.CUSTOM_NAME, name.copy().setStyle(name.getStyle().applyTo(Style.EMPTY.withItalic(false))));
 
-        MutableText msgName = name.copy().setStyle(name.getStyle().withParent(Style.EMPTY.withFormatting(Formatting.WHITE)));
-        src.sendMessage(commandService.translateText(src, self ? "pal.cmd.rename.renamed.self" : "pal.cmd.rename.renamed", msgName).formatted(Formatting.GREEN));
+        MutableComponent msgName = name.copy().setStyle(name.getStyle().applyTo(Style.EMPTY.applyFormat(ChatFormatting.WHITE)));
+        src.sendSystemMessage(commandService.translateText(src, self ? "pal.cmd.rename.renamed.self" : "pal.cmd.rename.renamed", msgName).formatted(ChatFormatting.GREEN));
 
         return 1;
     }

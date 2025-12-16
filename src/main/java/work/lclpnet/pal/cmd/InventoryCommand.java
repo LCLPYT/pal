@@ -3,16 +3,16 @@ package work.lclpnet.pal.cmd;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.screen.GenericContainerScreenHandler;
-import net.minecraft.screen.ScreenHandlerFactory;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Formatting;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.ChestMenu;
+import net.minecraft.world.inventory.MenuConstructor;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.ChatFormatting;
 import work.lclpnet.kibu.cmd.type.CommandRegistrar;
 import work.lclpnet.kibu.cmd.type.KibuCommand;
 import work.lclpnet.kibu.translate.Translations;
@@ -38,45 +38,45 @@ public class InventoryCommand implements KibuCommand {
         registrar.registerCommand(command("inv"));
     }
 
-    private LiteralArgumentBuilder<ServerCommandSource> command(String name) {
-        return CommandManager.literal(name)
-                .requires(s -> s.hasPermissionLevel(2))
+    private LiteralArgumentBuilder<CommandSourceStack> command(String name) {
+        return Commands.literal(name)
+                .requires(s -> s.hasPermission(2))
                 .executes(this::ownInventory)
-                .then(CommandManager.argument("player", EntityArgumentType.player())
+                .then(Commands.argument("player", EntityArgument.player())
                         .executes(this::targetInventory));
     }
 
-    private int ownInventory(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        ServerPlayerEntity player = ctx.getSource().getPlayerOrThrow();
+    private int ownInventory(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
 
         openInventoryOf(player, player);
 
         return 1;
     }
 
-    private void openInventoryOf(ServerPlayerEntity player, ServerPlayerEntity target) {
-        PlayerInventory inv = target.getInventory();
-        ScreenHandlerFactory baseFactory = (syncId, inventory, p) -> new GenericContainerScreenHandler(ScreenHandlerType.GENERIC_9X4, syncId, inventory, inv, 4);
+    private void openInventoryOf(ServerPlayer player, ServerPlayer target) {
+        Inventory inv = target.getInventory();
+        MenuConstructor baseFactory = (syncId, inventory, p) -> new ChestMenu(MenuType.GENERIC_9x4, syncId, inventory, inv, 4);
 
         Translations translations = commandService.getTranslations();
-        RootText title = translations.translateText(player, "pal.cmd.inv.title", target.getNameForScoreboard());
+        RootText title = translations.translateText(player, "pal.cmd.inv.title", target.getScoreboardName());
 
-        player.openHandledScreen(new SimpleNamedScreenHandlerFactory(baseFactory, title));
+        player.openMenu(new SimpleMenuProvider(baseFactory, title));
 
         RootText text;
 
         if (player != target) {
-            text = translations.translateText(player, "pal.cmd.inv.opened", styled(target.getNameForScoreboard()).formatted(Formatting.YELLOW));
+            text = translations.translateText(player, "pal.cmd.inv.opened", styled(target.getScoreboardName()).formatted(ChatFormatting.YELLOW));
         } else {
             text = translations.translateText(player, "pal.cmd.inv.self");
         }
 
-        player.sendMessage(text.formatted(Formatting.GREEN));
+        player.sendSystemMessage(text.formatted(ChatFormatting.GREEN));
     }
 
-    private int targetInventory(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        ServerPlayerEntity player = ctx.getSource().getPlayerOrThrow();
-        ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "player");
+    private int targetInventory(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
+        ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
 
         openInventoryOf(player, target);
 

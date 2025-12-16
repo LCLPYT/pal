@@ -4,16 +4,16 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.command.argument.IdentifierArgumentType;
-import net.minecraft.entity.Entity;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.ResourceLocationArgument;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.ChatFormatting;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.BlockPos;
 import work.lclpnet.kibu.cmd.type.CommandRegistrar;
 import work.lclpnet.kibu.cmd.type.KibuCommand;
 import work.lclpnet.kibu.translate.Translations;
@@ -40,14 +40,14 @@ public class WorldCommand implements KibuCommand {
         registrar.registerCommand(command());
     }
 
-    private LiteralArgumentBuilder<ServerCommandSource> command() {
-        var node = CommandManager.literal("world")
-                .requires(source -> source.hasPermissionLevel(2))
-                .then(CommandManager.literal("tp")
-                        .then(CommandManager.argument("world", IdentifierArgumentType.identifier())
+    private LiteralArgumentBuilder<CommandSourceStack> command() {
+        var node = Commands.literal("world")
+                .requires(source -> source.hasPermission(2))
+                .then(Commands.literal("tp")
+                        .then(Commands.argument("world", ResourceLocationArgument.id())
                                 .suggests(new WorldSuggestionProvider())
                                 .executes(this::teleportSelf)
-                                .then(CommandManager.argument("entities", EntityArgumentType.entities())
+                                .then(Commands.argument("entities", EntityArgument.entities())
                                         .executes(this::teleport))));
 
         if (FabricLoader.getInstance().isModLoaded("fantasy")) {
@@ -57,63 +57,63 @@ public class WorldCommand implements KibuCommand {
         return node;
     }
 
-    private void registerModificationCommands(LiteralArgumentBuilder<ServerCommandSource> node) {
+    private void registerModificationCommands(LiteralArgumentBuilder<CommandSourceStack> node) {
         new RuntimeWorldCommandMaker(commandService).inject(node);
     }
 
-    private int teleport(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        ServerWorld world = WorldSuggestionProvider.getWorld(ctx, "world", commandService);
-        var entities = EntityArgumentType.getEntities(ctx, "entities");
+    private int teleport(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerLevel world = WorldSuggestionProvider.getWorld(ctx, "world", commandService);
+        var entities = EntityArgument.getEntities(ctx, "entities");
 
-        var spawnPoint = world.getSpawnPoint();
+        var spawnPoint = world.getRespawnData();
 
         for (Entity entity : entities) {
-            BlockPos pos = entity.getWorldSpawnPos(world, spawnPoint.getPos());
+            BlockPos pos = entity.adjustSpawnLocation(world, spawnPoint.pos());
             teleportEntity(entity, world, pos, spawnPoint.yaw(), spawnPoint.pitch());
         }
 
-        ServerCommandSource source = ctx.getSource();
+        CommandSourceStack source = ctx.getSource();
         RootText msg;
 
         int count = entities.size();
 
         if (count == 1) {
             msg = commandService.translateText(source, "pal.cmd.world.teleport.single",
-                    styled(entities.iterator().next().getNameForScoreboard()).formatted(Formatting.YELLOW),
-                    styled(world.getRegistryKey().getValue()).formatted(Formatting.YELLOW));
+                    styled(entities.iterator().next().getScoreboardName()).formatted(ChatFormatting.YELLOW),
+                    styled(world.dimension().location()).formatted(ChatFormatting.YELLOW));
         } else {
             msg = commandService.translateText(source, "pal.cmd.world.teleport.multiple",
-                    styled(count).formatted(Formatting.YELLOW),
-                    styled(world.getRegistryKey().getValue()).formatted(Formatting.YELLOW));
+                    styled(count).formatted(ChatFormatting.YELLOW),
+                    styled(world.dimension().location()).formatted(ChatFormatting.YELLOW));
         }
 
-        source.sendMessage(msg.formatted(Formatting.GREEN));
+        source.sendSystemMessage(msg.formatted(ChatFormatting.GREEN));
 
         return count;
     }
 
-    private int teleportSelf(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        ServerWorld world = WorldSuggestionProvider.getWorld(ctx, "world", commandService);
+    private int teleportSelf(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerLevel world = WorldSuggestionProvider.getWorld(ctx, "world", commandService);
 
-        ServerCommandSource source = ctx.getSource();
-        ServerPlayerEntity player = source.getPlayerOrThrow();
+        CommandSourceStack source = ctx.getSource();
+        ServerPlayer player = source.getPlayerOrException();
 
-        var spawnPoint = world.getSpawnPoint();
-        BlockPos pos = player.getWorldSpawnPos(world, spawnPoint.getPos());
+        var spawnPoint = world.getRespawnData();
+        BlockPos pos = player.adjustSpawnLocation(world, spawnPoint.pos());
 
         teleportEntity(player, world, pos, spawnPoint.yaw(), spawnPoint.pitch());
 
         Translations translations = commandService.getTranslations();
-        Identifier id = world.getRegistryKey().getValue();
+        ResourceLocation id = world.dimension().location();
 
-        source.sendMessage(translations.translateText(source, "pal.cmd.world.teleport.single",
-                styled(player.getNameForScoreboard(), Formatting.YELLOW),
-                styled(id, Formatting.YELLOW)).formatted(Formatting.GREEN));
+        source.sendSystemMessage(translations.translateText(source, "pal.cmd.world.teleport.single",
+                styled(player.getScoreboardName(), ChatFormatting.YELLOW),
+                styled(id, ChatFormatting.YELLOW)).formatted(ChatFormatting.GREEN));
 
         return 1;
     }
 
-    private void teleportEntity(Entity entity, ServerWorld world, BlockPos pos, float yaw, float pitch) {
-        entity.teleport(world, pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, Set.of(), yaw, pitch, true);
+    private void teleportEntity(Entity entity, ServerLevel world, BlockPos pos, float yaw, float pitch) {
+        entity.teleportTo(world, pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, Set.of(), yaw, pitch, true);
     }
 }

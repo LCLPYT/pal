@@ -1,9 +1,9 @@
 package work.lclpnet.pal.service;
 
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
 import org.jetbrains.annotations.Nullable;
 
 import javax.inject.Inject;
@@ -18,18 +18,18 @@ public class FormattingService {
     @Inject
     public FormattingService() {}
 
-    public MutableText parseText(String string, char formatChar) {
+    public MutableComponent parseText(String string, char formatChar) {
         String[] parts = string.split(Pattern.quote(String.valueOf(formatChar)));
         Style style = Style.EMPTY;
 
-        List<MutableText> texts = new ArrayList<>();
+        List<MutableComponent> texts = new ArrayList<>();
         StringBuilder carry = new StringBuilder(parts[0]);
 
         for (int i = 1, partsLength = parts.length; i < partsLength; i++) {
             String part = parts[i];
             if (part.isEmpty()) continue;
 
-            Formatting format = getFormatting(part.charAt(0));
+            ChatFormatting format = getFormatting(part.charAt(0));
 
             if (format == null) {
                 carry.append(part);
@@ -37,24 +37,24 @@ public class FormattingService {
             }
 
             if (!carry.isEmpty()) {
-                texts.add(Text.literal(carry.toString()).setStyle(style));
+                texts.add(Component.literal(carry.toString()).setStyle(style));
                 carry.setLength(0);
             }
 
-            style = style.withFormatting(format);
+            style = style.applyFormat(format);
 
-            texts.add(Text.literal(part.substring(1)).setStyle(style));
+            texts.add(Component.literal(part.substring(1)).setStyle(style));
         }
 
         if (!carry.isEmpty()) {
-            texts.add(Text.literal(carry.toString()).setStyle(style));
+            texts.add(Component.literal(carry.toString()).setStyle(style));
         }
 
         if (texts.isEmpty()) {
-            return Text.empty();
+            return Component.empty();
         }
 
-        MutableText root = texts.getFirst();
+        MutableComponent root = texts.getFirst();
 
         for (int i = 1, len = texts.size(); i < len; i++) {
             root.append(texts.get(i));
@@ -64,30 +64,30 @@ public class FormattingService {
     }
 
     @Nullable
-    private Formatting getFormatting(char spec) {
+    private ChatFormatting getFormatting(char spec) {
         return switch (spec) {
-            case '0' -> Formatting.BLACK;
-            case '1' -> Formatting.DARK_BLUE;
-            case '2' -> Formatting.DARK_GREEN;
-            case '3' -> Formatting.DARK_AQUA;
-            case '4' -> Formatting.DARK_RED;
-            case '5' -> Formatting.DARK_PURPLE;
-            case '6' -> Formatting.GOLD;
-            case '7' -> Formatting.GRAY;
-            case '8' -> Formatting.DARK_GRAY;
-            case '9' -> Formatting.BLUE;
-            case 'a' -> Formatting.GREEN;
-            case 'b' -> Formatting.AQUA;
-            case 'c' -> Formatting.RED;
-            case 'd' -> Formatting.LIGHT_PURPLE;
-            case 'e' -> Formatting.YELLOW;
-            case 'f' -> Formatting.WHITE;
-            case 'k' -> Formatting.OBFUSCATED;
-            case 'l' -> Formatting.BOLD;
-            case 'm' -> Formatting.STRIKETHROUGH;
-            case 'n' -> Formatting.UNDERLINE;
-            case 'o' -> Formatting.ITALIC;
-            case 'r' -> Formatting.RESET;
+            case '0' -> ChatFormatting.BLACK;
+            case '1' -> ChatFormatting.DARK_BLUE;
+            case '2' -> ChatFormatting.DARK_GREEN;
+            case '3' -> ChatFormatting.DARK_AQUA;
+            case '4' -> ChatFormatting.DARK_RED;
+            case '5' -> ChatFormatting.DARK_PURPLE;
+            case '6' -> ChatFormatting.GOLD;
+            case '7' -> ChatFormatting.GRAY;
+            case '8' -> ChatFormatting.DARK_GRAY;
+            case '9' -> ChatFormatting.BLUE;
+            case 'a' -> ChatFormatting.GREEN;
+            case 'b' -> ChatFormatting.AQUA;
+            case 'c' -> ChatFormatting.RED;
+            case 'd' -> ChatFormatting.LIGHT_PURPLE;
+            case 'e' -> ChatFormatting.YELLOW;
+            case 'f' -> ChatFormatting.WHITE;
+            case 'k' -> ChatFormatting.OBFUSCATED;
+            case 'l' -> ChatFormatting.BOLD;
+            case 'm' -> ChatFormatting.STRIKETHROUGH;
+            case 'n' -> ChatFormatting.UNDERLINE;
+            case 'o' -> ChatFormatting.ITALIC;
+            case 'r' -> ChatFormatting.RESET;
             default -> null;
         };
     }

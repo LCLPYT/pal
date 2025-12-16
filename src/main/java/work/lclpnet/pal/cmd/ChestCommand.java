@@ -3,16 +3,16 @@ package work.lclpnet.pal.cmd;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.inventory.EnderChestInventory;
-import net.minecraft.screen.GenericContainerScreenHandler;
-import net.minecraft.screen.ScreenHandlerFactory;
-import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.world.inventory.PlayerEnderChestContainer;
+import net.minecraft.world.inventory.ChestMenu;
+import net.minecraft.world.inventory.MenuConstructor;
+import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
 import work.lclpnet.kibu.cmd.type.CommandRegistrar;
 import work.lclpnet.kibu.cmd.type.KibuCommand;
 import work.lclpnet.kibu.translate.Translations;
@@ -25,7 +25,7 @@ import static work.lclpnet.kibu.translate.text.FormatWrapper.styled;
 
 public class ChestCommand implements KibuCommand {
 
-    private static final Text containerName = Text.translatable("container.enderchest");
+    private static final Component containerName = Component.translatable("container.enderchest");
     private final CommandService commandService;
 
     @Inject
@@ -38,42 +38,42 @@ public class ChestCommand implements KibuCommand {
         registrar.registerCommand(command());
     }
 
-    private LiteralArgumentBuilder<ServerCommandSource> command() {
-        return CommandManager.literal("chest")
-                .requires(s -> s.hasPermissionLevel(2))
+    private LiteralArgumentBuilder<CommandSourceStack> command() {
+        return Commands.literal("chest")
+                .requires(s -> s.hasPermission(2))
                 .executes(this::ownChest)
-                .then(CommandManager.argument("player", EntityArgumentType.player())
+                .then(Commands.argument("player", EntityArgument.player())
                         .executes(this::targetChest));
     }
 
-    private int ownChest(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        ServerPlayerEntity player = ctx.getSource().getPlayerOrThrow();
+    private int ownChest(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
 
         openChestOf(player, player);
 
         return 1;
     }
 
-    private void openChestOf(ServerPlayerEntity player, ServerPlayerEntity target) {
-        EnderChestInventory chestInventory = target.getEnderChestInventory();
-        ScreenHandlerFactory baseFactory = (syncId, inventory, p) -> GenericContainerScreenHandler.createGeneric9x3(syncId, inventory, chestInventory);
-        player.openHandledScreen(new SimpleNamedScreenHandlerFactory(baseFactory, containerName));
+    private void openChestOf(ServerPlayer player, ServerPlayer target) {
+        PlayerEnderChestContainer chestInventory = target.getEnderChestInventory();
+        MenuConstructor baseFactory = (syncId, inventory, p) -> ChestMenu.threeRows(syncId, inventory, chestInventory);
+        player.openMenu(new SimpleMenuProvider(baseFactory, containerName));
 
         Translations translations = commandService.getTranslations();
         RootText text;
 
         if (player != target) {
-            text = translations.translateText(player, "pal.cmd.chest.opened", styled(target.getNameForScoreboard()).formatted(Formatting.YELLOW));
+            text = translations.translateText(player, "pal.cmd.chest.opened", styled(target.getScoreboardName()).formatted(ChatFormatting.YELLOW));
         } else {
             text = translations.translateText(player, "pal.cmd.chest.self");
         }
 
-        player.sendMessage(text.formatted(Formatting.GREEN));
+        player.sendSystemMessage(text.formatted(ChatFormatting.GREEN));
     }
 
-    private int targetChest(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        ServerPlayerEntity player = ctx.getSource().getPlayerOrThrow();
-        ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "player");
+    private int targetChest(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
+        ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
 
         openChestOf(player, target);
 

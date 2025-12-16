@@ -2,9 +2,9 @@ package work.lclpnet.pal.service;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import work.lclpnet.kibu.translate.Translations;
 import work.lclpnet.kibu.translate.text.RootText;
@@ -42,42 +42,42 @@ public class CommandService {
     }
 
     @NotNull
-    public CommandSyntaxException createRequiresLivingException(ServerCommandSource source) {
+    public CommandSyntaxException createRequiresLivingException(CommandSourceStack source) {
         return requiresLivingException.create(key -> translateText(source, key));
     }
 
     @NotNull
-    public CommandSyntaxException createUnknownWorldException(ServerCommandSource source, Identifier id) {
+    public CommandSyntaxException createUnknownWorldException(CommandSourceStack source, ResourceLocation id) {
         return unknownWorldException.create(key -> translateText(source, key, id));
     }
 
     @NotNull
-    public CommandSyntaxException createUnknownWorldTypeException(ServerCommandSource source, Identifier id) {
+    public CommandSyntaxException createUnknownWorldTypeException(CommandSourceStack source, ResourceLocation id) {
         return unknownWorldTypeException.create(key -> translateText(source, key, id));
     }
 
     @NotNull
-    public CommandSyntaxException createNotUnloadableWorldException(ServerCommandSource source) {
+    public CommandSyntaxException createNotUnloadableWorldException(CommandSourceStack source) {
         return notUnloadableWorldException.create(key -> translateText(source, key));
     }
 
     @NotNull
-    public CommandSyntaxException createReservedWorldIdException(ServerCommandSource source, Identifier id) {
+    public CommandSyntaxException createReservedWorldIdException(CommandSourceStack source, ResourceLocation id) {
         return reservedWorldIdException.create(key -> translateText(source, key, id, id.getNamespace()));
     }
 
     @NotNull
-    public CommandSyntaxException createPersistedWorldFailedToLoadException(ServerCommandSource source, Identifier id) {
+    public CommandSyntaxException createPersistedWorldFailedToLoadException(CommandSourceStack source, ResourceLocation id) {
         return persistedWorldFailedToLoadException.create(key -> translateText(source, key, id));
     }
 
     @NotNull
-    public CommandSyntaxException createInvalidMapSizesException(ServerCommandSource source) {
+    public CommandSyntaxException createInvalidMapSizesException(CommandSourceStack source) {
         return invalidMapSizesException.create(key -> translateText(source, key));
     }
 
     @NotNull
-    public CommandSyntaxException createInvalidIntException(ServerCommandSource source, String input) {
+    public CommandSyntaxException createInvalidIntException(CommandSourceStack source, String input) {
         return invalidIntException.create(key -> translateText(source, input));
     }
 
@@ -85,8 +85,8 @@ public class CommandService {
         return translations;
     }
 
-    public RootText translateText(ServerCommandSource source, String key, Object... arguments) {
-        ServerPlayerEntity player = source.getPlayer();
+    public RootText translateText(CommandSourceStack source, String key, Object... arguments) {
+        ServerPlayer player = source.getPlayer();
 
         if (player != null) {
             return translations.translateText(player, key, arguments);

@@ -2,7 +2,7 @@ package work.lclpnet.pal.cmd;
 
 import com.mojang.brigadier.exceptions.CommandExceptionType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 import java.util.function.Function;
 
@@ -14,7 +14,7 @@ public class TranslatedCommandExceptionType implements CommandExceptionType {
         this.key = key;
     }
 
-    public CommandSyntaxException create(Function<String, Text> textFunction) {
+    public CommandSyntaxException create(Function<String, Component> textFunction) {
         return new CommandSyntaxException(this, textFunction.apply(key));
     }
 }

@@ -3,12 +3,12 @@ package work.lclpnet.pal.cmd;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.util.Formatting;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.ChatFormatting;
 import work.lclpnet.kibu.cmd.type.CommandRegistrar;
 import work.lclpnet.kibu.cmd.type.KibuCommand;
 import work.lclpnet.kibu.translate.text.RootText;
@@ -32,17 +32,17 @@ public class DieCommand implements KibuCommand {
         registrar.registerCommand(command());
     }
 
-    private LiteralArgumentBuilder<ServerCommandSource> command() {
-        return CommandManager.literal("die")
-                .requires(s -> s.hasPermissionLevel(2))
+    private LiteralArgumentBuilder<CommandSourceStack> command() {
+        return Commands.literal("die")
+                .requires(s -> s.hasPermission(2))
                 .executes(this::dieSelf)
-                .then(CommandManager.argument("entities", EntityArgumentType.entities())
+                .then(Commands.argument("entities", EntityArgument.entities())
                         .executes(this::die));
     }
 
-    private int dieSelf(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        ServerCommandSource source = ctx.getSource();
-        Entity entity = source.getEntityOrThrow();
+    private int dieSelf(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        CommandSourceStack source = ctx.getSource();
+        Entity entity = source.getEntityOrException();
 
         if (!(entity instanceof LivingEntity living)) {
             throw commandService.createRequiresLivingException(source);
@@ -50,8 +50,8 @@ public class DieCommand implements KibuCommand {
 
         dieEntity(living);
 
-        RootText message = commandService.translateText(source, "pal.cmd.die.single", styled(living.getNameForScoreboard()).formatted(Formatting.YELLOW));
-        source.sendMessage(message.formatted(Formatting.GREEN));
+        RootText message = commandService.translateText(source, "pal.cmd.die.single", styled(living.getScoreboardName()).formatted(ChatFormatting.YELLOW));
+        source.sendSystemMessage(message.formatted(ChatFormatting.GREEN));
 
         return 0;
     }
@@ -60,31 +60,31 @@ public class DieCommand implements KibuCommand {
         living.setHealth(0);
     }
 
-    private int die(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        var entities = EntityArgumentType.getEntities(ctx, "entities").stream()
-                .filter(Entity::isLiving)
+    private int die(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        var entities = EntityArgument.getEntities(ctx, "entities").stream()
+                .filter(Entity::showVehicleHealth)
                 .toList();
 
         if (entities.isEmpty()) {
-            throw EntityArgumentType.ENTITY_NOT_FOUND_EXCEPTION.create();
+            throw EntityArgument.NO_ENTITIES_FOUND.create();
         }
 
         for (Entity entity : entities) {
             dieEntity((LivingEntity) entity);
         }
 
-        ServerCommandSource source = ctx.getSource();
+        CommandSourceStack source = ctx.getSource();
         RootText msg;
 
         int count = entities.size();
 
         if (count == 1) {
-            msg = commandService.translateText(source, "pal.cmd.die.single", styled(entities.getFirst().getNameForScoreboard()).formatted(Formatting.YELLOW));
+            msg = commandService.translateText(source, "pal.cmd.die.single", styled(entities.getFirst().getScoreboardName()).formatted(ChatFormatting.YELLOW));
         } else {
-            msg = commandService.translateText(source, "pal.cmd.die.multiple", styled(count).formatted(Formatting.YELLOW));
+            msg = commandService.translateText(source, "pal.cmd.die.multiple", styled(count).formatted(ChatFormatting.YELLOW));
         }
 
-        source.sendMessage(msg.formatted(Formatting.GREEN));
+        source.sendSystemMessage(msg.formatted(ChatFormatting.GREEN));
 
         return count;
     }

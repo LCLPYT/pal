@@ -1,13 +1,13 @@
 package work.lclpnet.pal.util;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.PistonBlock;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.piston.PistonBaseBlock;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -15,7 +15,7 @@ import java.util.function.Predicate;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.max;
-import static net.minecraft.util.math.MathHelper.floor;
+import static net.minecraft.util.Mth.floor;
 
 @Singleton
 public class ContraptionService {
@@ -23,54 +23,54 @@ public class ContraptionService {
     @Inject
     public ContraptionService() {}
 
-    public boolean isBoosterPlate(BlockView world, BlockPos pos) {
-        return world.getBlockState(pos).isOf(Blocks.LIGHT_WEIGHTED_PRESSURE_PLATE) && world.getBlockState(pos.down()).isOf(Blocks.GOLD_BLOCK);
+    public boolean isBoosterPlate(BlockGetter world, BlockPos pos) {
+        return world.getBlockState(pos).is(Blocks.LIGHT_WEIGHTED_PRESSURE_PLATE) && world.getBlockState(pos.below()).is(Blocks.GOLD_BLOCK);
     }
 
-    public boolean isElevator(BlockView world, BlockPos.Mutable pos) {
+    public boolean isElevator(BlockGetter world, BlockPos.MutableBlockPos pos) {
         int x = pos.getX(), y = pos.getY(), z = pos.getZ();
 
         BlockState state = world.getBlockState(pos);
 
-        if (!state.isOf(Blocks.BEACON) || !isSurroundedByPistons(world, pos)) {
+        if (!state.is(Blocks.BEACON) || !isSurroundedByPistons(world, pos)) {
             return false;
         }
 
         pos.set(x, y, z);
 
-        return isCorneredBy(pos, p -> world.getBlockState(p).isOf(Blocks.DIAMOND_BLOCK));
+        return isCorneredBy(pos, p -> world.getBlockState(p).is(Blocks.DIAMOND_BLOCK));
     }
 
-    public boolean isJumpPad(BlockView world, BlockPos.Mutable pos) {
+    public boolean isJumpPad(BlockGetter world, BlockPos.MutableBlockPos pos) {
         int x = pos.getX(), y = pos.getY(), z = pos.getZ();
 
         BlockState state = world.getBlockState(pos);
 
-        if (!state.isOf(Blocks.PISTON) || state.get(PistonBlock.FACING) != Direction.UP || !isSurroundedByPistons(world, pos)) {
+        if (!state.is(Blocks.PISTON) || state.getValue(PistonBaseBlock.FACING) != Direction.UP || !isSurroundedByPistons(world, pos)) {
             return false;
         }
 
         pos.set(x, y, z);
 
-        return isCorneredBy(pos, p -> world.getBlockState(p).isOf(Blocks.IRON_BLOCK));
+        return isCorneredBy(pos, p -> world.getBlockState(p).is(Blocks.IRON_BLOCK));
     }
 
-    public boolean isTeleporter(World world, BlockPos blockPos) {
+    public boolean isTeleporter(Level world, BlockPos blockPos) {
         BlockState state = world.getBlockState(blockPos);
 
-        return state.isOf(Blocks.LAPIS_BLOCK) && world.isReceivingRedstonePower(blockPos);
+        return state.is(Blocks.LAPIS_BLOCK) && world.hasNeighborSignal(blockPos);
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    private boolean isSurroundedByPistons(BlockView world, BlockPos.Mutable pos) {
+    private boolean isSurroundedByPistons(BlockGetter world, BlockPos.MutableBlockPos pos) {
         int x = pos.getX(), y = pos.getY(), z = pos.getZ();
 
-        for (Direction direction : Direction.Type.HORIZONTAL) {
-            pos.set(x + direction.getOffsetX(), y, z + direction.getOffsetZ());
+        for (Direction direction : Direction.Plane.HORIZONTAL) {
+            pos.set(x + direction.getStepX(), y, z + direction.getStepZ());
 
             BlockState state = world.getBlockState(pos);
 
-            if (!state.isOf(Blocks.PISTON) || state.get(PistonBlock.FACING) != direction.getOpposite()) {
+            if (!state.is(Blocks.PISTON) || state.getValue(PistonBaseBlock.FACING) != direction.getOpposite()) {
                 return false;
             }
         }
@@ -78,7 +78,7 @@ public class ContraptionService {
         return true;
     }
 
-    private boolean isCorneredBy(BlockPos.Mutable pos, Predicate<BlockPos> predicate) {
+    private boolean isCorneredBy(BlockPos.MutableBlockPos pos, Predicate<BlockPos> predicate) {
         int x = pos.getX(), y = pos.getY(), z = pos.getZ();
 
         // check (-1, -1), (1, -1), (-1, 1), (1, 1)
@@ -96,38 +96,38 @@ public class ContraptionService {
         return true;
     }
 
-    public boolean findJumpPad(BlockView world, Vec3d pos, BlockPos.Mutable blockPos, double triggerMargin) {
+    public boolean findJumpPad(BlockGetter world, Vec3 pos, BlockPos.MutableBlockPos blockPos, double triggerMargin) {
         // if there is no valid block underneath, terminate early
         blockPos.set(floor(pos.x), floor(pos.y) - 1, floor(pos.z));
         BlockState state = world.getBlockState(blockPos);
 
-        if (!state.isOf(Blocks.PISTON) && !state.isOf(Blocks.IRON_BLOCK)) {
+        if (!state.is(Blocks.PISTON) && !state.is(Blocks.IRON_BLOCK)) {
             return false;
         }
 
         return find3x3(pos, blockPos, p -> isJumpPad(world, p), triggerMargin);
     }
 
-    public boolean findElevator(BlockView world, Vec3d pos, BlockPos.Mutable blockPos, double triggerMargin) {
+    public boolean findElevator(BlockGetter world, Vec3 pos, BlockPos.MutableBlockPos blockPos, double triggerMargin) {
         // if there is no valid block underneath, terminate early
         blockPos.set(floor(pos.x), floor(pos.y) - 1, floor(pos.z));
         BlockState state = world.getBlockState(blockPos);
 
-        if (!state.isOf(Blocks.PISTON) && !state.isOf(Blocks.DIAMOND_BLOCK) && !state.isOf(Blocks.BEACON)) {
+        if (!state.is(Blocks.PISTON) && !state.is(Blocks.DIAMOND_BLOCK) && !state.is(Blocks.BEACON)) {
             return false;
         }
 
         return find3x3(pos, blockPos, p -> isElevator(world, p), triggerMargin);
     }
 
-    private boolean find3x3(Vec3d pos, BlockPos.Mutable blockPos, Predicate<BlockPos.Mutable> predicate, double triggerMargin) {
+    private boolean find3x3(Vec3 pos, BlockPos.MutableBlockPos blockPos, Predicate<BlockPos.MutableBlockPos> predicate, double triggerMargin) {
         int x = floor(pos.x);
         int y = floor(pos.y) - 1;
         int z = floor(pos.z);
 
         for (int ox = -1; ox <= 1; ox++) {
             for (int oz = -1; oz <= 1; oz++) {
-                double distToCenter = max(abs(x + ox + 0.5 - pos.getX()), abs(z + oz + 0.5 - pos.getZ()));
+                double distToCenter = max(abs(x + ox + 0.5 - pos.x()), abs(z + oz + 0.5 - pos.z()));
 
                 if (distToCenter > triggerMargin) continue;
 

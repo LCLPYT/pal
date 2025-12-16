@@ -1,31 +1,31 @@
 package work.lclpnet.pal.event;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.damage.DamageTypes;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.particle.BlockStateParticleEffect;
-import net.minecraft.particle.ParticleTypes;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.core.particles.BlockParticleOption;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.PlayerManager;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.server.players.PlayerList;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.core.Direction;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 import work.lclpnet.kibu.access.VelocityModifier;
 import work.lclpnet.kibu.hook.HookListenerModule;
 import work.lclpnet.kibu.hook.HookRegistrar;
@@ -52,7 +52,7 @@ import java.util.stream.StreamSupport;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.round;
-import static net.minecraft.util.math.MathHelper.floor;
+import static net.minecraft.util.Mth.floor;
 
 public class PlateListener implements HookListenerModule {
 
@@ -95,14 +95,14 @@ public class PlateListener implements HookListenerModule {
         registrar.registerHook(PlayerInteractionHooks.USE_BLOCK, this::onRightClickBlock);
     }
 
-    private void cleanUpMarker(Entity entity, ServerWorld world) {
+    private void cleanUpMarker(Entity entity, ServerLevel world) {
         if (entity.isRemoved() || !markerConfigurator.isPalMarker(entity)) return;
 
-        BlockPos pos = entity.getBlockPos();
+        BlockPos pos = entity.blockPosition();
 
         if (contraptionService.isBoosterPlate(world, pos)) return;
 
-        var mutPos = pos.mutableCopy();
+        var mutPos = pos.mutable();
 
         if (contraptionService.isJumpPad(world, mutPos)) return;
 
@@ -114,9 +114,9 @@ public class PlateListener implements HookListenerModule {
         entity.discard();
     }
 
-    private boolean onPressurePlate(World world, BlockPos pos, Entity entity) {
+    private boolean onPressurePlate(Level world, BlockPos pos, Entity entity) {
         if (!config.enablePlates
-                || !(entity instanceof ServerPlayerEntity player)
+                || !(entity instanceof ServerPlayer player)
                 || !contraptionService.isBoosterPlate(world, pos)) {
             return false;
         }
@@ -125,9 +125,9 @@ public class PlateListener implements HookListenerModule {
         double horizontal = markerConfigurator.getStrength(markerData, MarkerConfigurator.Property.HORIZONTAL_STRENGTH);
         double vertical = markerConfigurator.getStrength(markerData, MarkerConfigurator.Property.VERTICAL_STRENGTH);
 
-        Vec3d rotation = player.getRotationVector();
-        Vec3d velocity = rotation.multiply(config.plateStrength * horizontal)
-                .withAxis(Direction.Axis.Y, config.plateStrength * vertical);
+        Vec3 rotation = player.getLookAngle();
+        Vec3 velocity = rotation.scale(config.plateStrength * horizontal)
+                .with(Direction.Axis.Y, config.plateStrength * vertical);
 
         VelocityModifier.setVelocity(player, velocity);
 
@@ -137,34 +137,34 @@ public class PlateListener implements HookListenerModule {
     }
 
     private boolean allowDamage(LivingEntity entity, DamageSource source, float amount) {
-        if (!(entity instanceof ServerPlayerEntity player) || !source.isOf(DamageTypes.FALL)) {
+        if (!(entity instanceof ServerPlayer player) || !source.is(DamageTypes.FALL)) {
             return true;
         }
 
         synchronized (this) {
-            return !noFall.remove(player.getUuid());
+            return !noFall.remove(player.getUUID());
         }
     }
 
-    private synchronized void preventFallDamageOnce(ServerPlayerEntity player) {
-        noFall.add(player.getUuid());
+    private synchronized void preventFallDamageOnce(ServerPlayer player) {
+        noFall.add(player.getUUID());
     }
 
     private synchronized void serverTickEnd(MinecraftServer server) {
-        PlayerManager manager = server.getPlayerManager();
+        PlayerList manager = server.getPlayerList();
 
         noFall.removeIf(uuid -> {
-            ServerPlayerEntity player = manager.getPlayer(uuid);
+            ServerPlayer player = manager.getPlayer(uuid);
 
-            return player == null || player.isDisconnected() || !player.isAlive() || (OnGroundDetector.isOnGroundServer(player) && (player.fallDistance <= 0));
+            return player == null || player.hasDisconnected() || !player.isAlive() || (OnGroundDetector.isOnGroundServer(player) && (player.fallDistance <= 0));
         });
     }
 
-    private void onJump(ServerPlayerEntity player) {
-        if (!player.isOnGround() || !(player.getEntityWorld() instanceof ServerWorld world)) return;
+    private void onJump(ServerPlayer player) {
+        if (!player.onGround() || !(player.level() instanceof ServerLevel world)) return;
 
-        Vec3d pos = player.getEntityPos();
-        var blockPos = new BlockPos.Mutable();
+        Vec3 pos = player.position();
+        var blockPos = new BlockPos.MutableBlockPos();
 
         if (config.enablePads && contraptionService.findJumpPad(world, pos, blockPos, PLATFORM_TRIGGER_DIST)) {
             handleJumpPad(player, world, blockPos);
@@ -172,10 +172,10 @@ public class PlateListener implements HookListenerModule {
         }
 
         if (config.enableTeleporters) {
-            blockPos.set(floor(pos.getX()), floor(pos.getY()) - 1, floor(pos.getZ()));
+            blockPos.set(floor(pos.x()), floor(pos.y()) - 1, floor(pos.z()));
 
             if (contraptionService.isTeleporter(world, blockPos)
-                    && !teleporterCooldown.contains(player.getUuid())
+                    && !teleporterCooldown.contains(player.getUUID())
                     && findTeleporterAbove(world, blockPos)) {
 
                 useTeleporter(player, world, blockPos);
@@ -183,11 +183,11 @@ public class PlateListener implements HookListenerModule {
         }
     }
 
-    private void onSneak(ServerPlayerEntity player, boolean sneaking) {
-        if (!sneaking || player.getAbilities().flying || !(player.getEntityWorld() instanceof ServerWorld world)) return;
+    private void onSneak(ServerPlayer player, boolean sneaking) {
+        if (!sneaking || player.getAbilities().flying || !(player.level() instanceof ServerLevel world)) return;
 
-        Vec3d pos = player.getEntityPos();
-        var blockPos = new BlockPos.Mutable();
+        Vec3 pos = player.position();
+        var blockPos = new BlockPos.MutableBlockPos();
 
         if (config.enableElevators && contraptionService.findElevator(world, pos, blockPos, PLATFORM_TRIGGER_DIST)) {
             useElevator(player, world, blockPos);
@@ -195,10 +195,10 @@ public class PlateListener implements HookListenerModule {
         }
 
         if (config.enableTeleporters) {
-            blockPos.set(floor(pos.getX()), floor(pos.getY()) - 1, floor(pos.getZ()));
+            blockPos.set(floor(pos.x()), floor(pos.y()) - 1, floor(pos.z()));
 
             if (contraptionService.isTeleporter(world, blockPos)
-                    && !teleporterCooldown.contains(player.getUuid())
+                    && !teleporterCooldown.contains(player.getUUID())
                     && findTeleporterBelow(world, blockPos)) {
 
                 useTeleporter(player, world, blockPos);
@@ -206,7 +206,7 @@ public class PlateListener implements HookListenerModule {
         }
     }
 
-    private void useElevator(ServerPlayerEntity player, ServerWorld world, BlockPos.Mutable pos) {
+    private void useElevator(ServerPlayer player, ServerLevel world, BlockPos.MutableBlockPos pos) {
         var markerData = markerConfigurator.getMarkerData(world, pos);
 
         double durationSeconds = Optional.ofNullable(markerData)
@@ -220,11 +220,11 @@ public class PlateListener implements HookListenerModule {
         double strength = calculatePadStrength(world, pos, markerData, config.elevatorLegacyAmount);
         int amplifier = (int) (strength * 5) + 10;
 
-        player.removeStatusEffect(StatusEffects.LEVITATION);
-        player.addStatusEffect(new StatusEffectInstance(StatusEffects.LEVITATION, durationTicks, amplifier));
+        player.removeEffect(MobEffects.LEVITATION);
+        player.addEffect(new MobEffectInstance(MobEffects.LEVITATION, durationTicks, amplifier));
 
-        Vec3d velocity = player.getVelocity();
-        velocity = new Vec3d(0, velocity.getY(), 0);
+        Vec3 velocity = player.getDeltaMovement();
+        velocity = new Vec3(0, velocity.y(), 0);
         VelocityModifier.setVelocity(player, velocity);
 
         final double startX = player.getX(), startZ = player.getZ();
@@ -233,17 +233,17 @@ public class PlateListener implements HookListenerModule {
             double x = player.getX(), y = player.getY(), z = player.getZ();
 
             if (abs(x - startX) > PLATFORM_TRIGGER_DIST || abs(z - startZ) > PLATFORM_TRIGGER_DIST) {
-                player.removeStatusEffect(StatusEffects.LEVITATION);
+                player.removeEffect(MobEffects.LEVITATION);
             }
 
-            StatusEffectInstance effect = player.getStatusEffect(StatusEffects.LEVITATION);
+            MobEffectInstance effect = player.getEffect(MobEffects.LEVITATION);
 
             if (effect == null) {
                 task.cancel();
 
-                var particle = new BlockStateParticleEffect(ParticleTypes.FALLING_DUST, Blocks.PURPUR_BLOCK.getDefaultState());
-                world.spawnParticles(particle, x, y, z, 100, 1, 1, 1, 0);
-                world.playSound(null, x, y, z, SoundEvents.ENTITY_WITHER_BREAK_BLOCK, SoundCategory.PLAYERS, 2, 1);
+                var particle = new BlockParticleOption(ParticleTypes.FALLING_DUST, Blocks.PURPUR_BLOCK.defaultBlockState());
+                world.sendParticles(particle, x, y, z, 100, 1, 1, 1, 0);
+                world.playSound(null, x, y, z, SoundEvents.WITHER_BREAK_BLOCK, SoundSource.PLAYERS, 2, 1);
 
                 preventFallDamageOnce(player);
 
@@ -253,32 +253,32 @@ public class PlateListener implements HookListenerModule {
             int duration = effect.getDuration();
 
             if (duration > 45) {
-                world.spawnParticles(ParticleTypes.FIREWORK, x, y + 0.75, z, 5, 0.1, 0.1, 0.1, 0.25);
+                world.sendParticles(ParticleTypes.FIREWORK, x, y + 0.75, z, 5, 0.1, 0.1, 0.1, 0.25);
             } else if (duration == 40) {
-                world.spawnParticles(ParticleTypes.FIREWORK, x, y, z, 20, 0.1, 0.1, 0.1, 0);
+                world.sendParticles(ParticleTypes.FIREWORK, x, y, z, 20, 0.1, 0.1, 0.1, 0);
             } else if (duration == 30) {
-                world.spawnParticles(ParticleTypes.FIREWORK, x, y, z, 15, 0.1, 0.1, 0.1, 0);
+                world.sendParticles(ParticleTypes.FIREWORK, x, y, z, 15, 0.1, 0.1, 0.1, 0);
             } else if (duration == 20) {
-                world.spawnParticles(ParticleTypes.FIREWORK, x, y, z, 10, 0.1, 0.1, 0.1, 0);
+                world.sendParticles(ParticleTypes.FIREWORK, x, y, z, 10, 0.1, 0.1, 0.1, 0);
             } else if (duration == 10) {
-                world.spawnParticles(ParticleTypes.FIREWORK, x, y, z, 5, 0.1, 0.1, 0.1, 0);
+                world.sendParticles(ParticleTypes.FIREWORK, x, y, z, 5, 0.1, 0.1, 0.1, 0);
             }
         }, 1, 0);
     }
 
-    private void handleJumpPad(ServerPlayerEntity player, ServerWorld world, BlockPos.Mutable pos) {
-        UUID uuid = player.getUuid();
+    private void handleJumpPad(ServerPlayer player, ServerLevel world, BlockPos.MutableBlockPos pos) {
+        UUID uuid = player.getUUID();
 
         if (padCooldown.contains(uuid)) return;
 
         var markerData = markerConfigurator.getMarkerData(world, pos);
         double amount = calculatePadStrength(world, pos, markerData, config.padLegacyAmount);
 
-        Vec3d velocity = player.getVelocity();
-        velocity = new Vec3d(velocity.getX(), amount, velocity.getZ());
+        Vec3 velocity = player.getDeltaMovement();
+        velocity = new Vec3(velocity.x(), amount, velocity.z());
         VelocityModifier.setVelocity(player, velocity);
-        player.velocityModified = true;
-        player.velocityDirty = true;
+        player.hurtMarked = true;
+        player.hasImpulse = true;
 
         preventFallDamageOnce(player);
 
@@ -286,10 +286,10 @@ public class PlateListener implements HookListenerModule {
 
         scheduler.timeout(() -> padCooldown.remove(uuid), 5);
 
-        player.getEntityWorld().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.BLOCK_PISTON_EXTEND, SoundCategory.BLOCKS, 3, 2);
+        player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PISTON_EXTEND, SoundSource.BLOCKS, 3, 2);
     }
 
-    private double calculatePadStrength(ServerWorld world, BlockPos.Mutable pos, MarkerConfigurator.Data data, boolean legacy) {
+    private double calculatePadStrength(ServerLevel world, BlockPos.MutableBlockPos pos, MarkerConfigurator.Data data, boolean legacy) {
         double scale = markerConfigurator.getStrength(data, MarkerConfigurator.Property.STRENGTH);
 
         int emeraldBlocks = countBlocks(world, pos);
@@ -307,8 +307,8 @@ public class PlateListener implements HookListenerModule {
         return base * scale;
     }
 
-    private int countBlocks(World world, BlockPos.Mutable pos) {
-        final int minY = world.getBottomY();
+    private int countBlocks(Level world, BlockPos.MutableBlockPos pos) {
+        final int minY = world.getMinY();
 
         int i = 0;
 
@@ -316,7 +316,7 @@ public class PlateListener implements HookListenerModule {
             pos.setY(y);
             BlockState state = world.getBlockState(pos);
 
-            if (!state.isOf(Blocks.EMERALD_BLOCK)) break;
+            if (!state.is(Blocks.EMERALD_BLOCK)) break;
 
             i++;
         }
@@ -325,30 +325,30 @@ public class PlateListener implements HookListenerModule {
     }
 
 
-    private void useTeleporter(ServerPlayerEntity player, ServerWorld world, BlockPos target) {
+    private void useTeleporter(ServerPlayer player, ServerLevel world, BlockPos target) {
         if (!hasSpaceOn(world, player, target)) {
-            player.sendMessage(translations.translateText(player, "pal.teleporter.blocked").formatted(Formatting.RED));
+            player.sendSystemMessage(translations.translateText(player, "pal.teleporter.blocked").formatted(ChatFormatting.RED));
             return;
         }
 
         double destX = target.getX() + 0.5, destY = target.getY() + 1, destZ = target.getZ() + 0.5;
 
-        UUID uuid = player.getUuid();
+        UUID uuid = player.getUUID();
         teleporterCooldown.add(uuid);
 
         scheduler.timeout(() -> teleporterCooldown.remove(uuid), 5);
 
-        player.requestTeleport(destX, destY, destZ);
-        world.playSound(null, destX, destY, destZ, SoundEvents.ENTITY_POLAR_BEAR_STEP, SoundCategory.PLAYERS, 0.5f, 2f);
-        world.spawnParticles(ParticleTypes.CLOUD, destX, destY, destZ, 25, 0.2, 0.2, 0.2d, 0.05d);
+        player.teleportTo(destX, destY, destZ);
+        world.playSound(null, destX, destY, destZ, SoundEvents.POLAR_BEAR_STEP, SoundSource.PLAYERS, 0.5f, 2f);
+        world.sendParticles(ParticleTypes.CLOUD, destX, destY, destZ, 25, 0.2, 0.2, 0.2d, 0.05d);
 
-        Vec3d velocity = player.getVelocity();
-        velocity = new Vec3d(velocity.getX(), 0, velocity.getZ());
+        Vec3 velocity = player.getDeltaMovement();
+        velocity = new Vec3(velocity.x(), 0, velocity.z());
         VelocityModifier.setVelocity(player, velocity);
     }
 
-    private boolean findTeleporterBelow(ServerWorld world, BlockPos.Mutable pos) {
-        final int minY = world.getBottomY();
+    private boolean findTeleporterBelow(ServerLevel world, BlockPos.MutableBlockPos pos) {
+        final int minY = world.getMinY();
 
         for (int y = pos.getY() - 1; y >= minY; y--) {
             pos.setY(y);
@@ -361,8 +361,8 @@ public class PlateListener implements HookListenerModule {
         return false;
     }
 
-    private boolean findTeleporterAbove(ServerWorld world, BlockPos.Mutable pos) {
-        final int maxY = world.getTopYInclusive();
+    private boolean findTeleporterAbove(ServerLevel world, BlockPos.MutableBlockPos pos) {
+        final int maxY = world.getMaxY();
 
         for (int y = pos.getY() + 1; y <= maxY; y++) {
             pos.setY(y);
@@ -375,41 +375,41 @@ public class PlateListener implements HookListenerModule {
         return false;
     }
 
-    private boolean hasSpaceOn(World world, ServerPlayerEntity player, BlockPos target) {
-        Vec3d pos = new Vec3d(target.getX() + 0.5, target.getY() + 1, target.getZ() + 0.5);
-        Vec3d diff = pos.subtract(player.getEntityPos());
-        Box box = player.getBoundingBox().offset(diff);
+    private boolean hasSpaceOn(Level world, ServerPlayer player, BlockPos target) {
+        Vec3 pos = new Vec3(target.getX() + 0.5, target.getY() + 1, target.getZ() + 0.5);
+        Vec3 diff = pos.subtract(player.position());
+        AABB box = player.getBoundingBox().move(diff);
 
         return StreamSupport.stream(world.getCollisions(null, box).spliterator(), false)
                 .findAny().isEmpty();
     }
 
-    private ActionResult onRightClickBlock(PlayerEntity _player, World world, Hand hand, BlockHitResult hitResult) {
-        if (_player instanceof ServerPlayerEntity player && player.isCreative() && hand == Hand.MAIN_HAND && player.getMainHandStack().isEmpty()) {
+    private InteractionResult onRightClickBlock(Player _player, Level world, InteractionHand hand, BlockHitResult hitResult) {
+        if (_player instanceof ServerPlayer player && player.isCreative() && hand == InteractionHand.MAIN_HAND && player.getMainHandItem().isEmpty()) {
             return checkEditClick(world, hitResult, player);
         }
 
-        return ActionResult.PASS;
+        return InteractionResult.PASS;
     }
 
-    private ActionResult checkEditClick(World world, BlockHitResult hitResult, ServerPlayerEntity player) {
-        var blockPos = hitResult.getBlockPos().mutableCopy();
+    private InteractionResult checkEditClick(Level world, BlockHitResult hitResult, ServerPlayer player) {
+        var blockPos = hitResult.getBlockPos().mutable();
 
         if (contraptionService.isBoosterPlate(world, blockPos)) {
             markerConfigurator.editBoosterPlate(player, blockPos);
-            return ActionResult.SUCCESS_SERVER;
+            return InteractionResult.SUCCESS_SERVER;
         }
 
-        if (contraptionService.findJumpPad(world, hitResult.getPos(), blockPos, 1.51)) {
+        if (contraptionService.findJumpPad(world, hitResult.getLocation(), blockPos, 1.51)) {
             markerConfigurator.editStrength(player, blockPos, MarkerConfigurator.Property.STRENGTH);
 
-            return ActionResult.SUCCESS_SERVER;
+            return InteractionResult.SUCCESS_SERVER;
         }
 
-        if (contraptionService.findElevator(world, hitResult.getPos(), blockPos, 1.51)) {
+        if (contraptionService.findElevator(world, hitResult.getLocation(), blockPos, 1.51)) {
             markerConfigurator.editElevator(player, blockPos);
         }
 
-        return ActionResult.PASS;
+        return InteractionResult.PASS;
     }
 }

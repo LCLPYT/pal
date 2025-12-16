@@ -4,23 +4,23 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.NbtComponent;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.MarkerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Marker;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.world.EntityView;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.level.EntityGetter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import work.lclpnet.kibu.inv.prompt.OptionPrompt;
@@ -41,7 +41,7 @@ import java.util.function.DoubleSupplier;
 import static java.lang.Math.abs;
 import static java.lang.Math.max;
 import static java.util.Optional.empty;
-import static net.minecraft.util.Formatting.*;
+import static net.minecraft.ChatFormatting.*;
 import static work.lclpnet.kibu.translate.text.FormatWrapper.styled;
 
 public class MarkerConfigurator {
@@ -56,7 +56,7 @@ public class MarkerConfigurator {
         this.translations = translations;
     }
 
-    public void editBoosterPlate(ServerPlayerEntity player, BlockPos pos) {
+    public void editBoosterPlate(ServerPlayer player, BlockPos pos) {
         enum Option { HORIZONTAL, VERTICAL }
 
         var title = translations.translateText(player, "pal.edit_booster_plate.title");
@@ -64,12 +64,12 @@ public class MarkerConfigurator {
         OptionPrompt.open(player, title, Arrays.asList(Option.values()), option -> switch (option) {
             case HORIZONTAL -> {
                 var stack = new ItemStack(Items.BLAZE_POWDER);
-                stack.set(DataComponentTypes.ITEM_NAME, translations.translateText(player, "pal.edit_booster_plate.horizontal").formatted(AQUA));
+                stack.set(DataComponents.ITEM_NAME, translations.translateText(player, "pal.edit_booster_plate.horizontal").formatted(AQUA));
                 yield stack;
             }
             case VERTICAL -> {
                 var stack = new ItemStack(Items.FEATHER);
-                stack.set(DataComponentTypes.ITEM_NAME, translations.translateText(player, "pal.edit_booster_plate.vertical").formatted(AQUA));
+                stack.set(DataComponents.ITEM_NAME, translations.translateText(player, "pal.edit_booster_plate.vertical").formatted(AQUA));
                 yield stack;
             }
         }).thenAccept(o -> o.ifPresent(opt -> editStrength(player, pos, switch (opt) {
@@ -78,10 +78,10 @@ public class MarkerConfigurator {
         })));
     }
 
-    public void editStrength(ServerPlayerEntity player, BlockPos pos, Property property) {
-        editStrength(player, pos, property, () -> getStrength(player.getEntityWorld(), pos, property));
+    public void editStrength(ServerPlayer player, BlockPos pos, Property property) {
+        editStrength(player, pos, property, () -> getStrength(player.level(), pos, property));
     }
-    public void editStrength(ServerPlayerEntity player, BlockPos pos, Property property, DoubleSupplier getter) {
+    public void editStrength(ServerPlayer player, BlockPos pos, Property property, DoubleSupplier getter) {
         double current = getter.getAsDouble();
 
         String initial = decimalFormat(translations.getLocale(player)).format(current);
@@ -97,7 +97,7 @@ public class MarkerConfigurator {
                         }));
     }
 
-    public void editElevator(ServerPlayerEntity player, BlockPos pos) {
+    public void editElevator(ServerPlayer player, BlockPos pos) {
         enum Option { STRENGTH, DURATION }
 
         var title = translations.translateText(player, "pal.edit_elevator.title");
@@ -105,12 +105,12 @@ public class MarkerConfigurator {
         OptionPrompt.open(player, title, Arrays.asList(Option.values()), option -> switch (option) {
             case STRENGTH -> {
                 var stack = new ItemStack(Items.GLOWSTONE_DUST);
-                stack.set(DataComponentTypes.ITEM_NAME, translations.translateText(player, "pal.edit_elevator.strength").formatted(AQUA));
+                stack.set(DataComponents.ITEM_NAME, translations.translateText(player, "pal.edit_elevator.strength").formatted(AQUA));
                 yield stack;
             }
             case DURATION -> {
                 var stack = new ItemStack(Items.REDSTONE);
-                stack.set(DataComponentTypes.ITEM_NAME, translations.translateText(player, "pal.edit_elevator.duration").formatted(AQUA));
+                stack.set(DataComponents.ITEM_NAME, translations.translateText(player, "pal.edit_elevator.duration").formatted(AQUA));
                 yield stack;
             }
         }).thenAccept(o -> o.ifPresent(opt -> {
@@ -121,23 +121,23 @@ public class MarkerConfigurator {
 
             editStrength(player, pos, property, () -> switch (opt) {
                 case DURATION -> 10;
-                case STRENGTH -> getStrength(player.getEntityWorld(), pos, property);
+                case STRENGTH -> getStrength(player.level(), pos, property);
             });
         }));
     }
 
-    private void modifyStrength(ServerPlayerEntity player, BlockPos pos, Property property, double strength) {
-        setStrength(player.getEntityWorld(), pos, property, strength);
+    private void modifyStrength(ServerPlayer player, BlockPos pos, Property property, double strength) {
+        setStrength(player.level(), pos, property, strength);
 
-        player.playSoundToPlayer(SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(), SoundCategory.MASTER, 0.5f, 2f);
+        player.playNotifySound(SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.MASTER, 0.5f, 2f);
 
         var localizedStrength = new TextTranslatable() {
             @Override
-            public Text translateTo(String language) {
+            public Component translateTo(String language) {
                 Locale locale = LocaleUtil.getLocale(language);
                 var df = decimalFormat(locale);
 
-                return Text.literal(df.format(strength));
+                return Component.literal(df.format(strength));
             }
         };
 
@@ -153,10 +153,10 @@ public class MarkerConfigurator {
         return df;
     }
 
-    public @Nullable Data getMarkerData(EntityView world, BlockPos pos) {
-        var markers = world.getEntitiesByClass(MarkerEntity.class, new Box(pos), marker -> true);
+    public @Nullable Data getMarkerData(EntityGetter world, BlockPos pos) {
+        var markers = world.getEntitiesOfClass(Marker.class, new AABB(pos), marker -> true);
 
-        for (MarkerEntity marker : markers) {
+        for (Marker marker : markers) {
             Data data = getData(marker);
 
             if (data != null) {
@@ -167,29 +167,29 @@ public class MarkerConfigurator {
         return null;
     }
 
-    private @Nullable Data getData(MarkerEntity marker) {
-        NbtComponent customData = marker.get(DataComponentTypes.CUSTOM_DATA);
+    private @Nullable Data getData(Marker marker) {
+        CustomData customData = marker.get(DataComponents.CUSTOM_DATA);
 
         if (customData == null) return null;
 
-        return PAL_MARKER_CODEC.codec().decode(NbtOps.INSTANCE, customData.copyNbt())
+        return PAL_MARKER_CODEC.codec().decode(NbtOps.INSTANCE, customData.copyTag())
                 .resultOrPartial()
                 .map(Pair::getFirst)
                 .orElse(null);
     }
 
-    private void setData(MarkerEntity marker, Data data) {
-        NbtComponent customData = marker.get(DataComponentTypes.CUSTOM_DATA);
+    private void setData(Marker marker, Data data) {
+        CustomData customData = marker.get(DataComponents.CUSTOM_DATA);
 
         if (customData == null) return;
 
-        PAL_MARKER_CODEC.codec().encode(data, NbtOps.INSTANCE, customData.copyNbt())
+        PAL_MARKER_CODEC.codec().encode(data, NbtOps.INSTANCE, customData.copyTag())
                 .resultOrPartial()
-                .filter(nbt -> nbt instanceof NbtCompound)
-                .ifPresent(nbt -> marker.setComponent(DataComponentTypes.CUSTOM_DATA, NbtComponent.of((NbtCompound) nbt)));
+                .filter(nbt -> nbt instanceof CompoundTag)
+                .ifPresent(nbt -> marker.setComponent(DataComponents.CUSTOM_DATA, CustomData.of((CompoundTag) nbt)));
     }
 
-    public double getStrength(EntityView world, BlockPos pos, Property property) {
+    public double getStrength(EntityGetter world, BlockPos pos, Property property) {
         Data markerData = getMarkerData(world, pos);
 
         return getStrength(markerData, property);
@@ -203,15 +203,15 @@ public class MarkerConfigurator {
         return max(0.0, markerData.value(property).orElse(1.0));
     }
 
-    public void setStrength(ServerWorld world, BlockPos pos, Property property, double strength) {
+    public void setStrength(ServerLevel world, BlockPos pos, Property property, double strength) {
         strength = max(0.0, strength);
 
-        var markers = world.getEntitiesByClass(MarkerEntity.class, new Box(pos), marker -> true);
+        var markers = world.getEntitiesOfClass(Marker.class, new AABB(pos), marker -> true);
 
-        MarkerEntity markerEntity = null;
+        Marker markerEntity = null;
         Data markerData = Data.DEFAULT;
 
-        for (MarkerEntity marker : markers) {
+        for (Marker marker : markers) {
             Data data = getData(marker);
 
             if (data == null) continue;
@@ -234,12 +234,12 @@ public class MarkerConfigurator {
         }
 
         // create new marker if none exists
-        markerEntity = new MarkerEntity(EntityType.MARKER, world);
-        markerEntity.setPosition(pos.toCenterPos());
+        markerEntity = new Marker(EntityType.MARKER, world);
+        markerEntity.setPos(pos.getCenter());
 
         setData(markerEntity, markerData);
 
-        world.spawnEntity(markerEntity);
+        world.addFreshEntity(markerEntity);
     }
 
     private static OptionalDouble unsignedDouble(String input) {
@@ -253,11 +253,11 @@ public class MarkerConfigurator {
     }
 
     public boolean isPalMarker(Entity entity) {
-        if (!(entity instanceof MarkerEntity marker)) return false;
+        if (!(entity instanceof Marker marker)) return false;
 
-        NbtComponent customData = marker.get(DataComponentTypes.CUSTOM_DATA);
+        CustomData customData = marker.get(DataComponents.CUSTOM_DATA);
 
-        return customData != null && customData.copyNbt().contains(PAL_MARKER_KEY);
+        return customData != null && customData.copyTag().contains(PAL_MARKER_KEY);
     }
 
     public record Data(

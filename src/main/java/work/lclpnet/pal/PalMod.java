@@ -1,7 +1,7 @@
 package work.lclpnet.pal;
 
 import net.fabricmc.api.ModInitializer;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import work.lclpnet.kibu.cmd.impl.CommandContainer;
@@ -70,7 +70,7 @@ public class PalMod implements ModInitializer {
         }
     }
 
-    public static Identifier identifier(String path) {
-        return Identifier.of(ID, path);
+    public static ResourceLocation identifier(String path) {
+        return ResourceLocation.fromNamespaceAndPath(ID, path);
     }
 }

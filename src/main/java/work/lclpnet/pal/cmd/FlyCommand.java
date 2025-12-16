@@ -3,13 +3,13 @@ package work.lclpnet.pal.cmd;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.entity.player.PlayerAbilities;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.world.entity.player.Abilities;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
 import work.lclpnet.kibu.cmd.type.CommandRegistrar;
 import work.lclpnet.kibu.cmd.type.KibuCommand;
 import work.lclpnet.kibu.translate.Translations;
@@ -34,65 +34,65 @@ public class FlyCommand implements KibuCommand {
         registrar.registerCommand(command());
     }
 
-    private LiteralArgumentBuilder<ServerCommandSource> command() {
-        return CommandManager.literal("fly")
-                .requires(s -> s.hasPermissionLevel(2))
+    private LiteralArgumentBuilder<CommandSourceStack> command() {
+        return Commands.literal("fly")
+                .requires(s -> s.hasPermission(2))
                 .executes(this::flySelf)
-                .then(CommandManager.argument("players", EntityArgumentType.players())
+                .then(Commands.argument("players", EntityArgument.players())
                         .executes(this::fly));
     }
 
-    private int flySelf(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        ServerCommandSource source = ctx.getSource();
-        ServerPlayerEntity player = source.getPlayerOrThrow();
+    private int flySelf(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        CommandSourceStack source = ctx.getSource();
+        ServerPlayer player = source.getPlayerOrException();
 
         enableFlying(player);
 
         return 0;
     }
 
-    private void enableFlying(ServerPlayerEntity player) {
-        PlayerAbilities abilities = player.getAbilities();
+    private void enableFlying(ServerPlayer player) {
+        Abilities abilities = player.getAbilities();
 
-        abilities.allowFlying = !abilities.allowFlying;
+        abilities.mayfly = !abilities.mayfly;
 
-        if (!abilities.allowFlying && abilities.flying) {
+        if (!abilities.mayfly && abilities.flying) {
             abilities.flying = false;
         }
 
-        player.sendAbilitiesUpdate();
+        player.onUpdateAbilities();
 
         Translations translations = commandService.getTranslations();
-        Text text;
+        Component text;
 
-        if (abilities.allowFlying) {
-            text = translations.translateText(player, "pal.cmd.fly.enabled").formatted(Formatting.GREEN);
+        if (abilities.mayfly) {
+            text = translations.translateText(player, "pal.cmd.fly.enabled").formatted(ChatFormatting.GREEN);
         } else {
-            text = translations.translateText(player, "pal.cmd.fly.disabled").formatted(Formatting.RED);
+            text = translations.translateText(player, "pal.cmd.fly.disabled").formatted(ChatFormatting.RED);
         }
 
-        player.sendMessage(text);
+        player.sendSystemMessage(text);
     }
 
-    private int fly(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        var players = EntityArgumentType.getPlayers(ctx, "players");
+    private int fly(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        var players = EntityArgument.getPlayers(ctx, "players");
 
-        for (ServerPlayerEntity player : players) {
+        for (ServerPlayer player : players) {
             enableFlying(player);
         }
 
-        ServerCommandSource source = ctx.getSource();
+        CommandSourceStack source = ctx.getSource();
         RootText msg;
 
         int count = players.size();
 
         if (count == 1) {
-            msg = commandService.translateText(source, "pal.cmd.fly.single", styled(players.iterator().next().getNameForScoreboard()).formatted(Formatting.YELLOW));
+            msg = commandService.translateText(source, "pal.cmd.fly.single", styled(players.iterator().next().getScoreboardName()).formatted(ChatFormatting.YELLOW));
         } else {
-            msg = commandService.translateText(source, "pal.cmd.fly.multiple", styled(count).formatted(Formatting.YELLOW));
+            msg = commandService.translateText(source, "pal.cmd.fly.multiple", styled(count).formatted(ChatFormatting.YELLOW));
         }
 
-        source.sendMessage(msg.formatted(Formatting.GREEN));
+        source.sendSystemMessage(msg.formatted(ChatFormatting.GREEN));
 
         return count;
     }

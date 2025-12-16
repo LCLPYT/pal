@@ -1,11 +1,11 @@
 package work.lclpnet.pal.world;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import xyz.nucleoid.fantasy.RuntimeWorldConfig;
 
 public interface WorldType {
 
-    Identifier getIdentifier();
+    ResourceLocation getIdentifier();
 
     void configure(WorldCreationContext context, RuntimeWorldConfig config);
 }

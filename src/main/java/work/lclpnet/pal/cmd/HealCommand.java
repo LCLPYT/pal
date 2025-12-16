@@ -3,14 +3,14 @@ package work.lclpnet.pal.cmd;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.HungerManager;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Formatting;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.food.FoodData;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.ChatFormatting;
 import work.lclpnet.kibu.cmd.type.CommandRegistrar;
 import work.lclpnet.kibu.cmd.type.KibuCommand;
 import work.lclpnet.kibu.translate.Translations;
@@ -35,17 +35,17 @@ public class HealCommand implements KibuCommand {
         registrar.registerCommand(command());
     }
 
-    private LiteralArgumentBuilder<ServerCommandSource> command() {
-        return CommandManager.literal("heal")
-                .requires(s -> s.hasPermissionLevel(2))
+    private LiteralArgumentBuilder<CommandSourceStack> command() {
+        return Commands.literal("heal")
+                .requires(s -> s.hasPermission(2))
                 .executes(this::healSelf)
-                .then(CommandManager.argument("entities", EntityArgumentType.entities())
+                .then(Commands.argument("entities", EntityArgument.entities())
                         .executes(this::heal));
     }
 
-    private int healSelf(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        ServerCommandSource source = ctx.getSource();
-        Entity entity = source.getEntityOrThrow();
+    private int healSelf(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        CommandSourceStack source = ctx.getSource();
+        Entity entity = source.getEntityOrException();
 
         if (!(entity instanceof LivingEntity living)) {
             throw commandService.createRequiresLivingException(source);
@@ -59,42 +59,42 @@ public class HealCommand implements KibuCommand {
     private void healLiving(LivingEntity living) {
         living.setHealth(living.getMaxHealth());
 
-        if (!(living instanceof ServerPlayerEntity player)) return;
+        if (!(living instanceof ServerPlayer player)) return;
 
-        HungerManager hungerManager = player.getHungerManager();
+        FoodData hungerManager = player.getFoodData();
 
         hungerManager.setFoodLevel(20);
-        hungerManager.setSaturationLevel(5f);
+        hungerManager.setSaturation(5f);
 
         Translations translations = commandService.getTranslations();
-        player.sendMessage(translations.translateText(player, "pal.cmd.heal.healed_you").formatted(Formatting.GREEN));
+        player.sendSystemMessage(translations.translateText(player, "pal.cmd.heal.healed_you").formatted(ChatFormatting.GREEN));
     }
 
-    private int heal(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        var entities = EntityArgumentType.getEntities(ctx, "entities").stream()
-                .filter(Entity::isLiving)
+    private int heal(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        var entities = EntityArgument.getEntities(ctx, "entities").stream()
+                .filter(Entity::showVehicleHealth)
                 .toList();
 
         if (entities.isEmpty()) {
-            throw EntityArgumentType.ENTITY_NOT_FOUND_EXCEPTION.create();
+            throw EntityArgument.NO_ENTITIES_FOUND.create();
         }
 
         for (Entity entity : entities) {
             healLiving((LivingEntity) entity);
         }
 
-        ServerCommandSource source = ctx.getSource();
+        CommandSourceStack source = ctx.getSource();
         RootText msg;
 
         int count = entities.size();
 
         if (count == 1) {
-            msg = commandService.translateText(source, "pal.cmd.heal.single", styled(entities.getFirst().getNameForScoreboard()).formatted(Formatting.YELLOW));
+            msg = commandService.translateText(source, "pal.cmd.heal.single", styled(entities.getFirst().getScoreboardName()).formatted(ChatFormatting.YELLOW));
         } else {
-            msg = commandService.translateText(source, "pal.cmd.heal.multiple", styled(count).formatted(Formatting.YELLOW));
+            msg = commandService.translateText(source, "pal.cmd.heal.multiple", styled(count).formatted(ChatFormatting.YELLOW));
         }
 
-        source.sendMessage(msg.formatted(Formatting.GREEN));
+        source.sendSystemMessage(msg.formatted(ChatFormatting.GREEN));
 
         return count;
     }

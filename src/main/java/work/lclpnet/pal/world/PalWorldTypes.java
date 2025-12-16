@@ -1,10 +1,10 @@
 package work.lclpnet.pal.world;
 
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 import work.lclpnet.pal.world.builtin.PresetWorldType;
 import work.lclpnet.pal.world.builtin.VoidWorldType;
@@ -18,7 +18,7 @@ public class PalWorldTypes {
 
     public static final WorldType VOID = new VoidWorldType();
 
-    private final Map<Identifier, WorldType> customTypes;
+    private final Map<ResourceLocation, WorldType> customTypes;
 
     private PalWorldTypes() {
         customTypes = new HashMap<>();
@@ -27,20 +27,20 @@ public class PalWorldTypes {
     }
 
     public void registerWorldType(WorldType worldType) {
-        Identifier identifier = worldType.getIdentifier();
+        ResourceLocation identifier = worldType.getIdentifier();
         customTypes.put(identifier, worldType);
     }
 
     public void unregisterWorldType(WorldType worldType) {
-        Identifier identifier = worldType.getIdentifier();
+        ResourceLocation identifier = worldType.getIdentifier();
         customTypes.remove(identifier);
     }
 
-    public Set<Identifier> getWorldTypes(MinecraftServer server) {
-        Set<Identifier> identifiers = new HashSet<>();
+    public Set<ResourceLocation> getWorldTypes(MinecraftServer server) {
+        Set<ResourceLocation> identifiers = new HashSet<>();
 
-        var serverWorldKeys = server.getWorldRegistryKeys();
-        serverWorldKeys.forEach(key -> identifiers.add(key.getValue()));
+        var serverWorldKeys = server.levelKeys();
+        serverWorldKeys.forEach(key -> identifiers.add(key.location()));
 
         customTypes.forEach((identifier, worldType) -> identifiers.add(identifier));
 
@@ -52,17 +52,17 @@ public class PalWorldTypes {
     }
 
     @Nullable
-    public WorldType getWorldType(MinecraftServer server, Identifier identifier) {
+    public WorldType getWorldType(MinecraftServer server, ResourceLocation identifier) {
         WorldType worldType = customTypes.get(identifier);
 
         if (worldType != null) {
             return worldType;
         }
 
-        var worldKey = RegistryKey.of(RegistryKeys.WORLD, identifier);
+        var worldKey = ResourceKey.create(Registries.DIMENSION, identifier);
 
         // check that the world key is valid
-        ServerWorld world = server.getWorld(worldKey);
+        ServerLevel world = server.getLevel(worldKey);
 
         if (world == null) {
             return null;
