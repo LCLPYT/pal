@@ -18,7 +18,7 @@ import work.lclpnet.kibu.cmd.type.CommandRegistrar;
 import work.lclpnet.kibu.cmd.type.KibuCommand;
 import work.lclpnet.kibu.translate.Translations;
 import work.lclpnet.kibu.translate.text.RootText;
-import work.lclpnet.pal.cmd.arg.WorldSuggestionProvider;
+import work.lclpnet.pal.cmd.arg.LevelSuggestionProvider;
 import work.lclpnet.pal.service.CommandService;
 
 import javax.inject.Inject;
@@ -45,7 +45,7 @@ public class WorldCommand implements KibuCommand {
                 .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.literal("tp")
                         .then(Commands.argument("world", IdentifierArgument.id())
-                                .suggests(new WorldSuggestionProvider())
+                                .suggests(new LevelSuggestionProvider())
                                 .executes(this::teleportSelf)
                                 .then(Commands.argument("entities", EntityArgument.entities())
                                         .executes(this::teleport))));
@@ -62,7 +62,7 @@ public class WorldCommand implements KibuCommand {
     }
 
     private int teleport(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-        ServerLevel world = WorldSuggestionProvider.getWorld(ctx, "world", commandService);
+        ServerLevel world = LevelSuggestionProvider.getLevel(ctx, "world", commandService);
         var entities = EntityArgument.getEntities(ctx, "entities");
 
         var spawnPoint = world.getRespawnData();
@@ -93,7 +93,7 @@ public class WorldCommand implements KibuCommand {
     }
 
     private int teleportSelf(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-        ServerLevel world = WorldSuggestionProvider.getWorld(ctx, "world", commandService);
+        ServerLevel world = LevelSuggestionProvider.getLevel(ctx, "world", commandService);
 
         CommandSourceStack source = ctx.getSource();
         ServerPlayer player = source.getPlayerOrException();

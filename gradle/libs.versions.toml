@@ -13,8 +13,8 @@ javax-inject = "1"
 json-config4j = "1.0.0"
 junit-jupiter = "5.8.1"
 image-comparison = "4.4.0"
-kibu = "0.153.1+1.21.11"
-kibu-world-api = "0.9.2+1.21.11"
+kibu = "0.154.0+26.1"
+kibu-world-api = "0.10.0+26.1.2"
 
 [plugins]
 fabric-loom = { id = "net.fabricmc.fabric-loom", version.ref = "fabric-loom" }

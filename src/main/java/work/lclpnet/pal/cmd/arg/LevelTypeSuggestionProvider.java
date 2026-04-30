@@ -7,18 +7,18 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.resources.Identifier;
-import work.lclpnet.pal.world.PalWorldTypes;
+import work.lclpnet.pal.level.PalLevelTypes;
 
 import java.util.concurrent.CompletableFuture;
 
-public class WorldTypeSuggestionProvider implements SuggestionProvider<CommandSourceStack> {
+public class LevelTypeSuggestionProvider implements SuggestionProvider<CommandSourceStack> {
 
     @Override
     public CompletableFuture<Suggestions> getSuggestions(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) {
         MinecraftServer server = context.getSource().getServer();
 
-        PalWorldTypes.getInstance()
-                .getWorldTypes(server)
+        PalLevelTypes.getInstance()
+                .getLevelTypes(server)
                 .stream()
                 .map(Identifier::toString)
                 .forEach(builder::suggest);

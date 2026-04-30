@@ -36,7 +36,7 @@ import work.lclpnet.kibu.hook.entity.ServerLivingEntityHooks;
 import work.lclpnet.kibu.hook.player.PlayerJumpCallback;
 import work.lclpnet.kibu.hook.player.PlayerSneakCallback;
 import work.lclpnet.kibu.hook.util.OnGroundDetector;
-import work.lclpnet.kibu.hook.world.PressurePlateCallback;
+import work.lclpnet.kibu.hook.level.PressurePlateCallback;
 import work.lclpnet.kibu.scheduler.api.Scheduler;
 import work.lclpnet.kibu.translate.Translations;
 import work.lclpnet.pal.config.PalConfig;
@@ -161,47 +161,51 @@ public class PlateListener implements HookListenerModule {
     }
 
     private void onJump(ServerPlayer player) {
-        if (!player.onGround() || !(player.level() instanceof ServerLevel world)) return;
+        if (!player.onGround()) return;
+
+        ServerLevel level = player.level();
 
         Vec3 pos = player.position();
         var blockPos = new BlockPos.MutableBlockPos();
 
-        if (config.enablePads && contraptionService.findJumpPad(world, pos, blockPos, PLATFORM_TRIGGER_DIST)) {
-            handleJumpPad(player, world, blockPos);
+        if (config.enablePads && contraptionService.findJumpPad(level, pos, blockPos, PLATFORM_TRIGGER_DIST)) {
+            handleJumpPad(player, level, blockPos);
             return;
         }
 
         if (config.enableTeleporters) {
             blockPos.set(floor(pos.x()), floor(pos.y()) - 1, floor(pos.z()));
 
-            if (contraptionService.isTeleporter(world, blockPos)
+            if (contraptionService.isTeleporter(level, blockPos)
                     && !teleporterCooldown.contains(player.getUUID())
-                    && findTeleporterAbove(world, blockPos)) {
+                    && findTeleporterAbove(level, blockPos)) {
 
-                useTeleporter(player, world, blockPos);
+                useTeleporter(player, level, blockPos);
             }
         }
     }
 
     private void onSneak(ServerPlayer player, boolean sneaking) {
-        if (!sneaking || player.getAbilities().flying || !(player.level() instanceof ServerLevel world)) return;
+        if (!sneaking || player.getAbilities().flying) return;
+
+        ServerLevel level = player.level();
 
         Vec3 pos = player.position();
         var blockPos = new BlockPos.MutableBlockPos();
 
-        if (config.enableElevators && contraptionService.findElevator(world, pos, blockPos, PLATFORM_TRIGGER_DIST)) {
-            useElevator(player, world, blockPos);
+        if (config.enableElevators && contraptionService.findElevator(level, pos, blockPos, PLATFORM_TRIGGER_DIST)) {
+            useElevator(player, level, blockPos);
             return;
         }
 
         if (config.enableTeleporters) {
             blockPos.set(floor(pos.x()), floor(pos.y()) - 1, floor(pos.z()));
 
-            if (contraptionService.isTeleporter(world, blockPos)
+            if (contraptionService.isTeleporter(level, blockPos)
                     && !teleporterCooldown.contains(player.getUUID())
-                    && findTeleporterBelow(world, blockPos)) {
+                    && findTeleporterBelow(level, blockPos)) {
 
-                useTeleporter(player, world, blockPos);
+                useTeleporter(player, level, blockPos);
             }
         }
     }

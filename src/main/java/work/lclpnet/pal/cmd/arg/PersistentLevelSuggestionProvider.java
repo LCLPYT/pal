@@ -18,7 +18,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.EnumSet;
 import java.util.concurrent.CompletableFuture;
 
-public class PersistentWorldSuggestionProvider implements SuggestionProvider<CommandSourceStack> {
+public class PersistentLevelSuggestionProvider implements SuggestionProvider<CommandSourceStack> {
 
     @Override
     public CompletableFuture<Suggestions> getSuggestions(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) {

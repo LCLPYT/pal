@@ -47,27 +47,27 @@ public class CommandService {
     }
 
     @NotNull
-    public CommandSyntaxException createUnknownWorldException(CommandSourceStack source, Identifier id) {
+    public CommandSyntaxException createUnknownLevelException(CommandSourceStack source, Identifier id) {
         return unknownWorldException.create(key -> translateText(source, key, id));
     }
 
     @NotNull
-    public CommandSyntaxException createUnknownWorldTypeException(CommandSourceStack source, Identifier id) {
+    public CommandSyntaxException createUnknownLevelTypeException(CommandSourceStack source, Identifier id) {
         return unknownWorldTypeException.create(key -> translateText(source, key, id));
     }
 
     @NotNull
-    public CommandSyntaxException createNotUnloadableWorldException(CommandSourceStack source) {
+    public CommandSyntaxException createNotUnloadableLevelException(CommandSourceStack source) {
         return notUnloadableWorldException.create(key -> translateText(source, key));
     }
 
     @NotNull
-    public CommandSyntaxException createReservedWorldIdException(CommandSourceStack source, Identifier id) {
+    public CommandSyntaxException createReservedLevelIdException(CommandSourceStack source, Identifier id) {
         return reservedWorldIdException.create(key -> translateText(source, key, id, id.getNamespace()));
     }
 
     @NotNull
-    public CommandSyntaxException createPersistedWorldFailedToLoadException(CommandSourceStack source, Identifier id) {
+    public CommandSyntaxException createPersistedLevelFailedToLoadException(CommandSourceStack source, Identifier id) {
         return persistedWorldFailedToLoadException.create(key -> translateText(source, key, id));
     }
 

@@ -1,20 +1,20 @@
-package work.lclpnet.pal.world.builtin;
+package work.lclpnet.pal.level.builtin;
 
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
-import work.lclpnet.pal.world.WorldCreationContext;
-import work.lclpnet.pal.world.WorldType;
-import xyz.nucleoid.fantasy.RuntimeWorldConfig;
+import work.lclpnet.pal.level.LevelCreationContext;
+import work.lclpnet.pal.level.LevelType;
+import xyz.nucleoid.fantasy.RuntimeLevelConfig;
 
-public class PresetWorldType implements WorldType {
+public class PresetLevelType implements LevelType {
 
     private final Identifier identifier;
     private final ResourceKey<Level> worldKey;
 
-    public PresetWorldType(Identifier identifier, ResourceKey<Level> worldKey) {
+    public PresetLevelType(Identifier identifier, ResourceKey<Level> worldKey) {
         this.identifier = identifier;
         this.worldKey = worldKey;
     }
@@ -25,7 +25,7 @@ public class PresetWorldType implements WorldType {
     }
 
     @Override
-    public void configure(WorldCreationContext context, RuntimeWorldConfig config) {
+    public void configure(LevelCreationContext context, RuntimeLevelConfig config) {
         MinecraftServer server = context.getServer();
         ServerLevel presetWorld = server.getLevel(worldKey);
 

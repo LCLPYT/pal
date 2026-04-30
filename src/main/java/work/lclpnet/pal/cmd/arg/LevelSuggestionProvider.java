@@ -19,28 +19,27 @@ import work.lclpnet.pal.service.CommandService;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
-public class WorldSuggestionProvider implements SuggestionProvider<CommandSourceStack> {
+public class LevelSuggestionProvider implements SuggestionProvider<CommandSourceStack> {
 
     private final Predicate<ServerLevel> predicate;
 
-    public WorldSuggestionProvider() {
-        this(world -> true);
+    public LevelSuggestionProvider() {
+        this(_ -> true);
     }
 
-    public WorldSuggestionProvider(Predicate<ServerLevel> predicate) {
+    public LevelSuggestionProvider(Predicate<ServerLevel> predicate) {
         this.predicate = predicate;
     }
 
     @Override
     public CompletableFuture<Suggestions> getSuggestions(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) {
         MinecraftServer server = context.getSource().getServer();
-        if (server == null) return builder.buildFuture();
 
         for (var key : server.levelKeys()) {
-            ServerLevel world = server.getLevel(key);
-            if (world == null) continue;
+            ServerLevel level = server.getLevel(key);
+            if (level == null) continue;
 
-            if (predicate.test(world)) {
+            if (predicate.test(level)) {
                 builder.suggest(key.identifier().toString());
             }
         }
@@ -49,20 +48,20 @@ public class WorldSuggestionProvider implements SuggestionProvider<CommandSource
     }
 
     @NotNull
-    public static ServerLevel getWorld(CommandContext<CommandSourceStack> ctx, String name, CommandService commandService) throws CommandSyntaxException {
-        Identifier worldId = IdentifierArgument.getId(ctx, name);
+    public static ServerLevel getLevel(CommandContext<CommandSourceStack> ctx, String name, CommandService commandService) throws CommandSyntaxException {
+        Identifier levelId = IdentifierArgument.getId(ctx, name);
 
         CommandSourceStack source = ctx.getSource();
         MinecraftServer server = source.getServer();
 
-        ResourceKey<Level> key = ResourceKey.create(Registries.DIMENSION, worldId);
+        ResourceKey<Level> key = ResourceKey.create(Registries.DIMENSION, levelId);
 
-        ServerLevel world = server.getLevel(key);
+        ServerLevel level = server.getLevel(key);
 
-        if (world == null) {
-            throw commandService.createUnknownWorldException(source, worldId);
+        if (level == null) {
+            throw commandService.createUnknownLevelException(source, levelId);
         }
 
-        return world;
+        return level;
     }
 }

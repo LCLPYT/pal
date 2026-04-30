@@ -1,4 +1,4 @@
-package work.lclpnet.pal.world.builtin;
+package work.lclpnet.pal.level.builtin;
 
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
@@ -10,12 +10,12 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import work.lclpnet.pal.PalMod;
-import work.lclpnet.pal.world.WorldCreationContext;
-import work.lclpnet.pal.world.WorldType;
-import xyz.nucleoid.fantasy.RuntimeWorldConfig;
+import work.lclpnet.pal.level.LevelCreationContext;
+import work.lclpnet.pal.level.LevelType;
+import xyz.nucleoid.fantasy.RuntimeLevelConfig;
 import xyz.nucleoid.fantasy.util.VoidChunkGenerator;
 
-public class VoidWorldType implements WorldType {
+public class VoidLevelType implements LevelType {
 
     @Override
     public Identifier getIdentifier() {
@@ -23,7 +23,7 @@ public class VoidWorldType implements WorldType {
     }
 
     @Override
-    public void configure(WorldCreationContext context, RuntimeWorldConfig config) {
+    public void configure(LevelCreationContext context, RuntimeLevelConfig config) {
         MinecraftServer server = context.getServer();
 
         Registry<Biome> biomeRegistry = server.registryAccess().lookupOrThrow(Registries.BIOME);
