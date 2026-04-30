@@ -1,0 +1,41 @@
+[versions]
+minecraft = "26.1.2"
+fabric-api = "0.147.0+26.1.2"
+fabric-loader = "0.19.1"
+fabric-loom = "1.16-SNAPSHOT"
+gradle-build-tools = "1.7.0"
+java = "25"
+fantasy = "0.8.0-beta.1+26.1.1"
+jetbrains-annotations = "24.1.0"
+json = "20231013"
+dagger = "2.46.1"
+javax-inject = "1"
+json-config4j = "1.0.0"
+junit-jupiter = "5.8.1"
+image-comparison = "4.4.0"
+kibu = "0.153.1+1.21.11"
+kibu-world-api = "0.9.2+1.21.11"
+
+[plugins]
+fabric-loom = { id = "net.fabricmc.fabric-loom", version.ref = "fabric-loom" }
+maven-publish = { id = "maven-publish" }
+gradle-build-utils = { id = "gradle-build-utils", version.ref = "gradle-build-tools" }
+java = { id = "java" }
+
+[libraries]
+minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }
+fabric-api = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabric-api" }
+fabric-loader = { module = "net.fabricmc:fabric-loader", version.ref = "fabric-loader" }
+fabric-loader-junit = { module = "net.fabricmc:fabric-loader-junit", version.ref = "fabric-loader" }
+fantasy = { module = "xyz.nucleoid:fantasy", version.ref = "fantasy" }
+jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains-annotations" }
+json = { module = "org.json:json", version.ref = "json" }
+dagger = { module = "com.google.dagger:dagger", version.ref = "dagger" }
+dagger-compiler = { module = "com.google.dagger:dagger-compiler", version.ref = "dagger" }
+javax-inject = { module = "javax.inject:javax.inject", version.ref = "javax-inject" }
+json-config4j = { module = "work.lclpnet:json-config4j", version.ref = "json-config4j" }
+kibu = { module = "work.lclpnet.mods.kibu:kibu", version.ref = "kibu" }
+kibu-world-api = { module = "work.lclpnet.mods.kibu:kibu-world-api", version.ref = "kibu-world-api" }
+junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit-jupiter" }
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit-jupiter" }
+image-comparison = { module = "com.github.romankh3:image-comparison", version.ref = "image-comparison" }
