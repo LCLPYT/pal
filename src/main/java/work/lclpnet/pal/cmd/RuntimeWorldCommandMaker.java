@@ -171,15 +171,15 @@ public class RuntimeWorldCommandMaker {
     private void sendCreationSuccess(Identifier levelId, CommandSourceStack source) {
         ClickEvent clickEvent = new ClickEvent.RunCommand("/world tp %s".formatted(levelId));
         HoverEvent hoverEvent = new HoverEvent.ShowText(commandService.translateText(source, "pal.cmd.world.create.success.tp_hover")
-                .formatted(ChatFormatting.GREEN));
+                .withStyle(ChatFormatting.GREEN));
 
         source.sendSystemMessage(commandService.translateText(source, "pal.cmd.world.create.success",
                         FormatWrapper.styled(levelId, ChatFormatting.YELLOW),
                         commandService.translateText(source, "pal.cmd.world.create.success.tp")
-                                .styled(style -> style.withClickEvent(clickEvent)
+                                .withStyle(style -> style.withClickEvent(clickEvent)
                                         .withHoverEvent(hoverEvent))
-                                .formatted(ChatFormatting.AQUA))
-                .formatted(ChatFormatting.GREEN));
+                                .withStyle(ChatFormatting.AQUA))
+                .withStyle(ChatFormatting.GREEN));
     }
 
     private int unload(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
@@ -200,7 +200,7 @@ public class RuntimeWorldCommandMaker {
         Identifier id = level.dimension().identifier();
 
         source.sendSystemMessage(commandService.translateText(source, "pal.cmd.world.unload.success",
-                FormatWrapper.styled(id, ChatFormatting.YELLOW)).formatted(ChatFormatting.GREEN));
+                FormatWrapper.styled(id, ChatFormatting.YELLOW)).withStyle(ChatFormatting.GREEN));
 
         return 1;
     }

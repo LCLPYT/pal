@@ -68,7 +68,7 @@ public class ChestCommand implements KibuCommand {
             text = translations.translateText(player, "pal.cmd.chest.self");
         }
 
-        player.sendSystemMessage(text.formatted(ChatFormatting.GREEN));
+        player.sendSystemMessage(text.withStyle(ChatFormatting.GREEN));
     }
 
     private int targetChest(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {

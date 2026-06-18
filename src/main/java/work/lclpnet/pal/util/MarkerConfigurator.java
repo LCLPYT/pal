@@ -14,13 +14,14 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Marker;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.EntityGetter;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import work.lclpnet.kibu.access.entity.ServerPlayerAccess;
@@ -65,12 +66,12 @@ public class MarkerConfigurator {
         OptionPrompt.open(player, title, Arrays.asList(Option.values()), option -> switch (option) {
             case HORIZONTAL -> {
                 var stack = new ItemStack(Items.BLAZE_POWDER);
-                stack.set(DataComponents.ITEM_NAME, translations.translateText(player, "pal.edit_booster_plate.horizontal").formatted(AQUA));
+                stack.set(DataComponents.ITEM_NAME, translations.translateText(player, "pal.edit_booster_plate.horizontal").withStyle(AQUA));
                 yield stack;
             }
             case VERTICAL -> {
                 var stack = new ItemStack(Items.FEATHER);
-                stack.set(DataComponents.ITEM_NAME, translations.translateText(player, "pal.edit_booster_plate.vertical").formatted(AQUA));
+                stack.set(DataComponents.ITEM_NAME, translations.translateText(player, "pal.edit_booster_plate.vertical").withStyle(AQUA));
                 yield stack;
             }
         }).thenAccept(o -> o.ifPresent(opt -> editStrength(player, pos, switch (opt) {
@@ -106,12 +107,12 @@ public class MarkerConfigurator {
         OptionPrompt.open(player, title, Arrays.asList(Option.values()), option -> switch (option) {
             case STRENGTH -> {
                 var stack = new ItemStack(Items.GLOWSTONE_DUST);
-                stack.set(DataComponents.ITEM_NAME, translations.translateText(player, "pal.edit_elevator.strength").formatted(AQUA));
+                stack.set(DataComponents.ITEM_NAME, translations.translateText(player, "pal.edit_elevator.strength").withStyle(AQUA));
                 yield stack;
             }
             case DURATION -> {
                 var stack = new ItemStack(Items.REDSTONE);
-                stack.set(DataComponents.ITEM_NAME, translations.translateText(player, "pal.edit_elevator.duration").formatted(AQUA));
+                stack.set(DataComponents.ITEM_NAME, translations.translateText(player, "pal.edit_elevator.duration").withStyle(AQUA));
                 yield stack;
             }
         }).thenAccept(o -> o.ifPresent(opt -> {
@@ -143,7 +144,7 @@ public class MarkerConfigurator {
         };
 
         translations.translateText("pal.edit_%s.changed".formatted(property.id()), styled(localizedStrength, YELLOW))
-                .formatted(GREEN)
+                .withStyle(GREEN)
                 .sendTo(player);
     }
 
@@ -235,8 +236,8 @@ public class MarkerConfigurator {
         }
 
         // create new marker if none exists
-        markerEntity = new Marker(EntityType.MARKER, world);
-        markerEntity.setPos(pos.getCenter());
+        markerEntity = new Marker(EntityTypes.MARKER, world);
+        markerEntity.setPos(Vec3.atCenterOf(pos));
 
         setData(markerEntity, markerData);
 

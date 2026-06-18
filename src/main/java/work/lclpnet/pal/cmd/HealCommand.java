@@ -67,7 +67,7 @@ public class HealCommand implements KibuCommand {
         hungerManager.setSaturation(5f);
 
         Translations translations = commandService.getTranslations();
-        player.sendSystemMessage(translations.translateText(player, "pal.cmd.heal.healed_you").formatted(ChatFormatting.GREEN));
+        player.sendSystemMessage(translations.translateText(player, "pal.cmd.heal.healed_you").withStyle(ChatFormatting.GREEN));
     }
 
     private int heal(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
@@ -94,7 +94,7 @@ public class HealCommand implements KibuCommand {
             msg = commandService.translateText(source, "pal.cmd.heal.multiple", styled(count).formatted(ChatFormatting.YELLOW));
         }
 
-        source.sendSystemMessage(msg.formatted(ChatFormatting.GREEN));
+        source.sendSystemMessage(msg.withStyle(ChatFormatting.GREEN));
 
         return count;
     }

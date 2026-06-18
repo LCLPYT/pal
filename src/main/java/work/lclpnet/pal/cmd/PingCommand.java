@@ -65,7 +65,7 @@ public class PingCommand implements KibuCommand {
                     styled(latencyMs / 1000f).formatted(ChatFormatting.YELLOW));
         }
 
-        player.sendSystemMessage(text.formatted(ChatFormatting.GREEN));
+        player.sendSystemMessage(text.withStyle(ChatFormatting.GREEN));
     }
 
     private int pingOther(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {

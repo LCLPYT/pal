@@ -51,7 +51,7 @@ public class DieCommand implements KibuCommand {
         dieEntity(living);
 
         RootText message = commandService.translateText(source, "pal.cmd.die.single", styled(living.getScoreboardName()).formatted(ChatFormatting.YELLOW));
-        source.sendSystemMessage(message.formatted(ChatFormatting.GREEN));
+        source.sendSystemMessage(message.withStyle(ChatFormatting.GREEN));
 
         return 0;
     }
@@ -84,7 +84,7 @@ public class DieCommand implements KibuCommand {
             msg = commandService.translateText(source, "pal.cmd.die.multiple", styled(count).formatted(ChatFormatting.YELLOW));
         }
 
-        source.sendSystemMessage(msg.formatted(ChatFormatting.GREEN));
+        source.sendSystemMessage(msg.withStyle(ChatFormatting.GREEN));
 
         return count;
     }

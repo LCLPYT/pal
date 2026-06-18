@@ -57,7 +57,7 @@ public class FeedCommand implements KibuCommand {
         hungerManager.setSaturation(5f);
 
         Translations translations = commandService.getTranslations();
-        player.sendSystemMessage(translations.translateText(player, "pal.cmd.feed.fed_you").formatted(ChatFormatting.GREEN));
+        player.sendSystemMessage(translations.translateText(player, "pal.cmd.feed.fed_you").withStyle(ChatFormatting.GREEN));
     }
 
     private int feed(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
@@ -78,7 +78,7 @@ public class FeedCommand implements KibuCommand {
             msg = commandService.translateText(source, "pal.cmd.feed.multiple", styled(count).formatted(ChatFormatting.YELLOW));
         }
 
-        source.sendSystemMessage(msg.formatted(ChatFormatting.GREEN));
+        source.sendSystemMessage(msg.withStyle(ChatFormatting.GREEN));
 
         return count;
     }

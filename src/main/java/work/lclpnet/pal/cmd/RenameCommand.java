@@ -74,14 +74,14 @@ public class RenameCommand implements KibuCommand {
         boolean self = src.getPlayer() == player;
 
         if (stack.isEmpty()) {
-            src.sendSystemMessage(commandService.translateText(src, self ? "pal.cmd.rename.no_item.self" : "pal.cmd.rename.no_item").formatted(ChatFormatting.RED));
+            src.sendSystemMessage(commandService.translateText(src, self ? "pal.cmd.rename.no_item.self" : "pal.cmd.rename.no_item").withStyle(ChatFormatting.RED));
             return 0;
         }
 
         stack.set(DataComponents.CUSTOM_NAME, name.copy().setStyle(name.getStyle().applyTo(Style.EMPTY.withItalic(false))));
 
         MutableComponent msgName = name.copy().setStyle(name.getStyle().applyTo(Style.EMPTY.applyFormat(ChatFormatting.WHITE)));
-        src.sendSystemMessage(commandService.translateText(src, self ? "pal.cmd.rename.renamed.self" : "pal.cmd.rename.renamed", msgName).formatted(ChatFormatting.GREEN));
+        src.sendSystemMessage(commandService.translateText(src, self ? "pal.cmd.rename.renamed.self" : "pal.cmd.rename.renamed", msgName).withStyle(ChatFormatting.GREEN));
 
         return 1;
     }

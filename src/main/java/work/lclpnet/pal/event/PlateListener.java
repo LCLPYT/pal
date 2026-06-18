@@ -331,7 +331,7 @@ public class PlateListener implements HookListenerModule {
 
     private void useTeleporter(ServerPlayer player, ServerLevel world, BlockPos target) {
         if (!hasSpaceOn(world, player, target)) {
-            player.sendSystemMessage(translations.translateText(player, "pal.teleporter.blocked").formatted(ChatFormatting.RED));
+            player.sendSystemMessage(translations.translateText(player, "pal.teleporter.blocked").withStyle(ChatFormatting.RED));
             return;
         }
 

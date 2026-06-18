@@ -87,7 +87,7 @@ public class WorldCommand implements KibuCommand {
                     styled(world.dimension().identifier()).formatted(ChatFormatting.YELLOW));
         }
 
-        source.sendSystemMessage(msg.formatted(ChatFormatting.GREEN));
+        source.sendSystemMessage(msg.withStyle(ChatFormatting.GREEN));
 
         return count;
     }
@@ -108,7 +108,7 @@ public class WorldCommand implements KibuCommand {
 
         source.sendSystemMessage(translations.translateText(source, "pal.cmd.world.teleport.single",
                 styled(player.getScoreboardName(), ChatFormatting.YELLOW),
-                styled(id, ChatFormatting.YELLOW)).formatted(ChatFormatting.GREEN));
+                styled(id, ChatFormatting.YELLOW)).withStyle(ChatFormatting.GREEN));
 
         return 1;
     }

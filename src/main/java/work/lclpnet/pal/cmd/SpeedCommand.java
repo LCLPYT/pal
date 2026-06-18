@@ -131,7 +131,7 @@ public class SpeedCommand implements KibuCommand {
                     styled(value).formatted(ChatFormatting.YELLOW));
         }
 
-        source.sendSystemMessage(msg.formatted(ChatFormatting.GREEN));
+        source.sendSystemMessage(msg.withStyle(ChatFormatting.GREEN));
 
         return count;
     }
@@ -190,7 +190,7 @@ public class SpeedCommand implements KibuCommand {
                         styled(count).formatted(ChatFormatting.YELLOW));
             }
 
-            source.sendSystemMessage(msg.formatted(ChatFormatting.GREEN));
+            source.sendSystemMessage(msg.withStyle(ChatFormatting.GREEN));
 
             return count;
         }

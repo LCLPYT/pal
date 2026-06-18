@@ -66,9 +66,9 @@ public class FlyCommand implements KibuCommand {
         Component text;
 
         if (abilities.mayfly) {
-            text = translations.translateText(player, "pal.cmd.fly.enabled").formatted(ChatFormatting.GREEN);
+            text = translations.translateText(player, "pal.cmd.fly.enabled").withStyle(ChatFormatting.GREEN);
         } else {
-            text = translations.translateText(player, "pal.cmd.fly.disabled").formatted(ChatFormatting.RED);
+            text = translations.translateText(player, "pal.cmd.fly.disabled").withStyle(ChatFormatting.RED);
         }
 
         player.sendSystemMessage(text);
@@ -92,7 +92,7 @@ public class FlyCommand implements KibuCommand {
             msg = commandService.translateText(source, "pal.cmd.fly.multiple", styled(count).formatted(ChatFormatting.YELLOW));
         }
 
-        source.sendSystemMessage(msg.formatted(ChatFormatting.GREEN));
+        source.sendSystemMessage(msg.withStyle(ChatFormatting.GREEN));
 
         return count;
     }

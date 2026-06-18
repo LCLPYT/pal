@@ -98,7 +98,7 @@ public class ImageMapCommand implements KibuCommand {
                 .thenCompose(imageManager::loadImage)
                 .exceptionally(error -> {
                     player.sendSystemMessage(translations.translateText(player, "pal.cmd.imagemap.not_found", styled(name, YELLOW))
-                            .formatted(RED));
+                            .withStyle(RED));
                     return null;
                 })
                 .thenAccept(image -> {
@@ -108,7 +108,7 @@ public class ImageMapCommand implements KibuCommand {
                 })
                 .exceptionally(error -> {
                     player.sendSystemMessage(translations.translateText(player, "pal.cmd.imagemap.error")
-                            .formatted(RED));
+                            .withStyle(RED));
                     return null;
                 });
     }

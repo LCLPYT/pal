@@ -71,7 +71,7 @@ public class InventoryCommand implements KibuCommand {
             text = translations.translateText(player, "pal.cmd.inv.self");
         }
 
-        player.sendSystemMessage(text.formatted(ChatFormatting.GREEN));
+        player.sendSystemMessage(text.withStyle(ChatFormatting.GREEN));
     }
 
     private int targetInventory(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
