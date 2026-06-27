@@ -121,6 +121,10 @@ public class PlateListener implements HookListenerModule {
             return false;
         }
 
+        if (!AllowBoosterPlateCallback.HOOK.invoker().canUseBoosterPlate(player, pos)) {
+            return false;
+        }
+
         var markerData = markerConfigurator.getMarkerData(world, pos);
         double horizontal = markerConfigurator.getStrength(markerData, MarkerConfigurator.Property.HORIZONTAL_STRENGTH);
         double vertical = markerConfigurator.getStrength(markerData, MarkerConfigurator.Property.VERTICAL_STRENGTH);
@@ -175,12 +179,13 @@ public class PlateListener implements HookListenerModule {
 
         if (config.enableTeleporters) {
             blockPos.set(floor(pos.x()), floor(pos.y()) - 1, floor(pos.z()));
+            BlockPos from = blockPos.immutable();
 
             if (contraptionService.isTeleporter(level, blockPos)
                     && !teleporterCooldown.contains(player.getUUID())
                     && findTeleporterAbove(level, blockPos)) {
 
-                useTeleporter(player, level, blockPos);
+                useTeleporter(player, level, from, blockPos);
             }
         }
     }
@@ -200,17 +205,20 @@ public class PlateListener implements HookListenerModule {
 
         if (config.enableTeleporters) {
             blockPos.set(floor(pos.x()), floor(pos.y()) - 1, floor(pos.z()));
+            BlockPos from = blockPos.immutable();
 
             if (contraptionService.isTeleporter(level, blockPos)
                     && !teleporterCooldown.contains(player.getUUID())
                     && findTeleporterBelow(level, blockPos)) {
 
-                useTeleporter(player, level, blockPos);
+                useTeleporter(player, level, from, blockPos);
             }
         }
     }
 
     private void useElevator(ServerPlayer player, ServerLevel world, BlockPos.MutableBlockPos pos) {
+        if (!AllowElevatorCallback.HOOK.invoker().canUseElevator(player, pos.immutable())) return;
+
         var markerData = markerConfigurator.getMarkerData(world, pos);
 
         double durationSeconds = Optional.ofNullable(markerData)
@@ -275,6 +283,8 @@ public class PlateListener implements HookListenerModule {
 
         if (padCooldown.contains(uuid)) return;
 
+        if (!AllowJumpPadCallback.HOOK.invoker().canUseJumPad(player, pos.immutable())) return;
+
         var markerData = markerConfigurator.getMarkerData(world, pos);
         double amount = calculatePadStrength(world, pos, markerData, config.padLegacyAmount);
 
@@ -329,11 +339,13 @@ public class PlateListener implements HookListenerModule {
     }
 
 
-    private void useTeleporter(ServerPlayer player, ServerLevel world, BlockPos target) {
+    private void useTeleporter(ServerPlayer player, ServerLevel world, BlockPos from, BlockPos target) {
         if (!hasSpaceOn(world, player, target)) {
             player.sendSystemMessage(translations.translateText(player, "pal.teleporter.blocked").withStyle(ChatFormatting.RED));
             return;
         }
+
+        if (!AllowTeleporterCallback.HOOK.invoker().canUseTeleporter(player, from, target)) return;
 
         double destX = target.getX() + 0.5, destY = target.getY() + 1, destZ = target.getZ() + 0.5;
 
